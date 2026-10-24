@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
 import SellerPanel from '../components/SellerPanel';
 
@@ -84,6 +85,12 @@ export default function Home() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif' }}>
+      <Head>
+        <title>Luminous Books - Discover & Buy Books Online</title>
+        <meta name="description" content="Instant downloads & physical delivery powered by secure M-Pesa checkout." />
+        <meta name="google-site-verification" content="pOV0NyJHeRUxcwsUuZ1pLx3l2MGHwaL7gE1dekfVh1s" />
+      </Head>
+
       <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(15px); }
