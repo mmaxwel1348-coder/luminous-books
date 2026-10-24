@@ -15,6 +15,10 @@ export default function Home() {
   const [paying, setPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  // Store M-Pesa Receiving Number State
+  const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
+  const [tempReceiveNumber, setTempReceiveNumber] = useState('0712345678');
+
   // Sales Analytics State
   const [salesData, setSalesData] = useState({ totalSold: 0, totalRevenue: 0, salesList: [] });
 
@@ -31,7 +35,23 @@ export default function Home() {
     if (savedSales) {
       setSalesData(JSON.parse(savedSales));
     }
+    const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
+    if (savedPhone) {
+      setMpesaReceiveNumber(savedPhone);
+      setTempReceiveNumber(savedPhone);
+    }
   }, []);
+
+  const handleSaveSettings = (e) => {
+    e.preventDefault();
+    if (!tempReceiveNumber || tempReceiveNumber.length < 9) {
+      alert('Please enter a valid M-Pesa phone number.');
+      return;
+    }
+    setMpesaReceiveNumber(tempReceiveNumber);
+    localStorage.setItem('luminiousbooks_mpesa_phone', tempReceiveNumber);
+    alert('M-Pesa Send Money phone number updated successfully!');
+  };
 
   const handleMpesaCheckout = (e) => {
     e.preventDefault();
@@ -284,12 +304,23 @@ export default function Home() {
           <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
             <h2 style={{ fontSize: '2rem', marginBottom: '1rem', fontWeight: '700' }}>⚙️ Store Settings</h2>
             <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '2rem', maxWidth: '600px' }}>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>M-Pesa Merchant Settings</h3>
-              <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Business Till / Paybill Number</label>
-              <input type="text" placeholder="e.g. 522522" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', marginBottom: '1.5rem', boxSizing: 'border-box' }} />
-              <button style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                Save Settings
-              </button>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>📱 M-Pesa Send Money Settings</h3>
+              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                Enter the personal phone number where customers will send money directly via M-Pesa.
+              </p>
+              <form onSubmit={handleSaveSettings}>
+                <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Receiving Phone Number (Send Money)</label>
+                <input 
+                  type="tel" 
+                  placeholder="e.g. 0712345678" 
+                  value={tempReceiveNumber}
+                  onChange={(e) => setTempReceiveNumber(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.5rem', boxSizing: 'border-box' }} 
+                />
+                <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  Save Phone Number
+                </button>
+              </form>
             </div>
           </div>
         )}
@@ -302,15 +333,22 @@ export default function Home() {
             {!paymentSuccess ? (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>🟢 M-Pesa Express Checkout</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>📲 M-Pesa Direct Payment</h3>
                   <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                 </div>
-                <div style={{ backgroundColor: '#0f172a', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
+                
+                <div style={{ backgroundColor: '#0f172a', padding: '1rem', borderRadius: '10px', marginBottom: '1rem' }}>
                   <p style={{ margin: '0 0 0.25rem 0', fontWeight: 'bold' }}>{selectedBook.title}</p>
                   <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: 'bold' }}>Amount: KES {selectedBook.price}</p>
                 </div>
+
+                <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
+                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Money To:</p>
+                  <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
+                </div>
+
                 <form onSubmit={handleMpesaCheckout}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>M-Pesa Phone Number</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</label>
                   <input 
                     type="tel" 
                     placeholder="0712345678" 
@@ -323,15 +361,15 @@ export default function Home() {
                     disabled={paying}
                     style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
                   >
-                    {paying ? 'Sending STK Push to Phone...' : `Pay KES ${selectedBook.price} via M-Pesa`}
+                    {paying ? 'Processing Order...' : `Confirm KES ${selectedBook.price} Sent`}
                   </button>
                 </form>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🎉</div>
-                <h3 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', color: '#34d399' }}>Payment Successful!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>STK push confirmed. Your sale has been automatically recorded to your Seller Dashboard.</p>
+                <h3 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', color: '#34d399' }}>Order Received!</h3>
+                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Thank you! Your payment has been confirmed and logged in the Seller Dashboard.</p>
                 <button 
                   onClick={closeModal}
                   style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
