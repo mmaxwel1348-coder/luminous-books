@@ -104,7 +104,7 @@ export default function Home() {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, width: '100%', overflowX: 'hidden' }}>
+    <div className="app-container">
       <Head>
         <title>Luminous Books - Discover & Buy Books Online</title>
         <meta name="description" content="Instant downloads & physical delivery powered by secure M-Pesa checkout." />
@@ -164,10 +164,89 @@ export default function Home() {
           background-color: #2563eb;
           color: #ffffff;
         }
+
+        /* Layout styles */
+        .app-container {
+          display: flex;
+          min-height: 100vh;
+          background-color: #090d16;
+          color: #f8fafc;
+          font-family: Segoe UI, sans-serif;
+          margin: 0;
+          padding: 0;
+          width: 100%;
+        }
+        .app-sidebar {
+          width: 250px;
+          background-color: #0f172a;
+          border-right: 1px solid #1e293b;
+          padding: 1.5rem 1rem;
+          display: flex;
+          flex-direction: column;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          box-sizing: border-box;
+          flex-shrink: 0;
+        }
+        .app-main {
+          flex: 1;
+          padding: 2rem;
+          box-sizing: border-box;
+          min-width: 0;
+        }
+
+        /* Responsive Mobile Override: Switch sidebar to top bar on phones */
+        @media (max-width: 768px) {
+          .app-container {
+            flex-direction: column;
+          }
+          .app-sidebar {
+            width: 100% !important;
+            height: auto !important;
+            position: sticky !important;
+            top: 0;
+            z-index: 100;
+            border-right: none !important;
+            border-bottom: 1px solid #1e293b;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+          }
+          .app-sidebar h1 {
+            margin: 0 !important;
+            font-size: 1.1rem !important;
+            padding-left: 0 !important;
+          }
+          .app-sidebar nav {
+            flex-direction: row !important;
+            gap: 0.35rem !important;
+            overflow-x: auto;
+            max-width: 60vw;
+            padding-bottom: 2px;
+          }
+          .sidebar-btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            width: auto;
+            white-space: nowrap;
+            gap: 6px;
+          }
+          .sidebar-btn span {
+            font-size: 1rem;
+          }
+          .app-sidebar > div:last-child {
+            display: none;
+          }
+          .app-main {
+            padding: 1rem !important;
+          }
+        }
       `}</style>
 
-      {/* Side Panel / Sidebar */}
-      <aside style={{ width: '250px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box', flexShrink: 0 }}>
+      {/* Side Panel / Sidebar (Transforms to Top Bar on Mobile) */}
+      <aside className="app-sidebar">
         <h1 style={{ margin: '0 0 2rem 0', fontSize: '1.25rem', fontWeight: 'bold', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', paddingLeft: '0.5rem' }}>
           📚 LUMINOUS
         </h1>
@@ -179,7 +258,7 @@ export default function Home() {
               onClick={() => setActiveTab(item.id)}
               className={`sidebar-btn ${activeTab === item.id ? 'active' : ''}`}
             >
-              <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
+              <span>{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -192,12 +271,12 @@ export default function Home() {
       </aside>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, padding: '2rem', boxSizing: 'border-box', minWidth: 0 }}>
+      <div className="app-main">
         {activeTab === 'storefront' && (
           <div>
-            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '16px', padding: '2.5rem', marginBottom: '2rem', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '2.5rem', margin: '0 0 1rem 0', fontWeight: '800' }}>Discover & Buy Extraordinary Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: '1.5rem' }}>Instant downloads & physical delivery powered by secure M-Pesa checkout.</p>
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '16px', padding: '2rem 1.5rem', marginBottom: '2rem', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '2rem', margin: '0 0 1rem 0', fontWeight: '800' }}>Discover & Buy Extraordinary Books</h2>
+              <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '1.5rem' }}>Instant downloads & physical delivery powered by secure M-Pesa checkout.</p>
               <input 
                 type="text" 
                 placeholder="Search by book title or author..." 
@@ -217,23 +296,23 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
                 {filteredBooks.map((book) => (
                   <div key={book.id} className="animated-card" style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ height: '170px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>
+                      <div style={{ height: '160px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', marginBottom: '1rem' }}>
                         📖
                       </div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', color: '#fff' }}>{book.title}</h3>
+                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
                       <p style={{ color: '#38bdf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author}</p>
                       <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{book.description}</p>
                     </div>
                     <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                      <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
+                      <span style={{ fontSize: '1.15rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
                       <button 
                         onClick={() => setSelectedBook(book)}
                         className="glow-btn"
-                        style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.6rem 1.2rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                        style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.6rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
                       >
                         Buy via M-Pesa
                       </button>
@@ -251,30 +330,30 @@ export default function Home() {
 
         {activeTab === 'dashboard' && (
           <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem', fontWeight: '700' }}>📊 Seller Analytics Dashboard</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontWeight: '700' }}>📊 Seller Analytics Dashboard</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
               <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
                 <p style={{ color: '#94a3b8', margin: '0 0 0.5rem 0' }}>Total Books Sold</p>
-                <h3 style={{ fontSize: '2.5rem', margin: 0, color: '#38bdf8' }}>{salesData.totalSold}</h3>
+                <h3 style={{ fontSize: '2.2rem', margin: 0, color: '#38bdf8' }}>{salesData.totalSold}</h3>
               </div>
               <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
                 <p style={{ color: '#94a3b8', margin: '0 0 0.5rem 0' }}>Total Revenue Earned</p>
-                <h3 style={{ fontSize: '2.5rem', margin: 0, color: '#34d399' }}>KES {salesData.totalRevenue.toLocaleString()}</h3>
+                <h3 style={{ fontSize: '2.2rem', margin: 0, color: '#34d399' }}>KES {salesData.totalRevenue.toLocaleString()}</h3>
               </div>
             </div>
 
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Recent Transactions</h3>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Recent Transactions</h3>
             {salesData.salesList.length === 0 ? (
               <p style={{ color: '#94a3b8', background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>No sales recorded yet.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {salesData.salesList.map((sale) => (
-                  <div key={sale.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={sale.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <div>
-                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.1rem' }}>{sale.title}</h4>
+                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.05rem' }}>{sale.title}</h4>
                       <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>Customer Phone: {sale.phone} • {sale.date}</p>
                     </div>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#34d399' }}>+KES {sale.price}</span>
+                    <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#34d399' }}>+KES {sale.price}</span>
                   </div>
                 ))}
               </div>
@@ -284,20 +363,20 @@ export default function Home() {
 
         {activeTab === 'orders' && (
           <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '1rem', fontWeight: '700' }}>📦 Customer Orders</h2>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '700' }}>📦 Customer Orders</h2>
             <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>Track physical shipments and eBook delivery confirmations.</p>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '2rem' }}>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
               {salesData.salesList.length === 0 ? (
                 <p style={{ color: '#94a3b8', margin: 0 }}>No pending customer orders.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {salesData.salesList.map((order) => (
-                    <div key={order.id} style={{ padding: '1rem', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={order.id} style={{ padding: '0.75rem 0', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div>
                         <p style={{ fontWeight: 'bold', margin: '0 0 0.25rem 0' }}>{order.title}</p>
                         <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.85rem' }}>Buyer: {order.phone}</p>
                       </div>
-                      <span style={{ backgroundColor: '#065f46', color: '#34d399', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                      <span style={{ backgroundColor: '#065f46', color: '#34d399', padding: '0.35rem 0.75rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
                         Paid & Dispatched
                       </span>
                     </div>
@@ -310,10 +389,10 @@ export default function Home() {
 
         {activeTab === 'settings' && (
           <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '1rem', fontWeight: '700' }}>⚙️ Store Settings</h2>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '2rem', maxWidth: '600px' }}>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>📱 M-Pesa Send Money Settings</h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', fontWeight: '700' }}>⚙️ Store Settings</h2>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', maxWidth: '600px' }}>
+              <h3 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>📱 M-Pesa Send Money Settings</h3>
+              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
                 Enter the personal phone number where customers will send money directly via M-Pesa.
               </p>
               <form onSubmit={handleSaveSettings}>
@@ -323,7 +402,7 @@ export default function Home() {
                   placeholder="e.g. 0712345678" 
                   value={tempReceiveNumber}
                   onChange={(e) => setTempReceiveNumber(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.5rem', boxSizing: 'border-box' }} 
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.25rem', boxSizing: 'border-box' }} 
                 />
                 <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                   Save Phone Number
@@ -337,11 +416,11 @@ export default function Home() {
       {/* M-Pesa Checkout Modal */}
       {selectedBook && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)', padding: '1rem' }}>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '450px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', boxSizing: 'border-box' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '420px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', boxSizing: 'border-box' }}>
             {!paymentSuccess ? (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.4rem' }}>📲 M-Pesa Direct Payment</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem' }}>📲 M-Pesa Direct Payment</h3>
                   <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                 </div>
                 
@@ -350,45 +429,10 @@ export default function Home() {
                   <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: 'bold' }}>Amount: KES {selectedBook.price}</p>
                 </div>
 
-                <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
+                <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.25rem' }}>
                   <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Money To:</p>
-                  <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
+                  <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
                 </div>
 
                 <form onSubmit={handleMpesaCheckout}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</label>
-                  <input 
-                    type="tel" 
-                    placeholder="0712345678" 
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.5rem', boxSizing: 'border-box' }}
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={paying}
-                    style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
-                  >
-                    {paying ? 'Processing Order...' : `Confirm KES ${selectedBook.price} Sent`}
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🎉</div>
-                <h3 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', color: '#34d399' }}>Order Received!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Thank you! Your payment has been confirmed and logged in the Seller Dashboard.</p>
-                <button 
-                  onClick={closeModal}
-                  style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  Back to Storefront
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</
