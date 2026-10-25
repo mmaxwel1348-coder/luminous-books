@@ -435,4 +435,39 @@ export default function Home() {
                 </div>
 
                 <form onSubmit={handleMpesaCheckout}>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</label>
+                  <input 
+                    type="tel" 
+                    placeholder="0712345678" 
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.25rem', boxSizing: 'border-box' }}
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={paying}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
+                  >
+                    {paying ? 'Processing Order...' : `Confirm KES ${selectedBook.price} Sent`}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
+                <h3 style={{ fontSize: '1.4rem', margin: '0 0 0.5rem 0', color: '#34d399' }}>Order Received!</h3>
+                <p style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.95rem' }}>Thank you! Your payment has been confirmed and logged in the Seller Dashboard.</p>
+                <button 
+                  onClick={closeModal}
+                  style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Back to Storefront
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
