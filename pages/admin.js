@@ -62,13 +62,25 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       <Head>
         <title>Admin Dashboard - Luminous Store</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
+      <style jsx global>{`
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background-color: #090d16 !important;
+          color: #f8fafc;
+          width: 100%;
+          overflow-x: hidden;
+        }
+      `}</style>
+
       {/* Admin Sidebar */}
-      <aside style={{ width: '250px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column' }}>
+      <aside style={{ width: '250px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
         <h1 style={{ margin: '0 0 2rem 0', fontSize: '1.25rem', fontWeight: 'bold', color: '#38bdf8' }}>
           ⚙️ STORE ADMIN
         </h1>
@@ -91,7 +103,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Admin Content */}
-      <main style={{ flex: 1, padding: '2rem' }}>
+      <main style={{ flex: 1, padding: '2rem', boxSizing: 'border-box', minWidth: 0 }}>
         {activeTab === 'dashboard' && (
           <div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>📊 Analytics Overview</h2>
@@ -113,7 +125,7 @@ export default function AdminDashboard() {
         {activeTab === 'addSong' && (
           <div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>🎛️ Add New Song for Sale</h2>
-            <form onSubmit={handleAddSong} style={{ backgroundColor: '#1e293b', padding: '2rem', borderRadius: '16px', border: '1px solid #334155', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleAddSong} style={{ backgroundColor: '#1e293b', padding: '2rem', borderRadius: '16px', border: '1px solid #334155', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1.25rem', boxSizing: 'border-box' }}>
               <div>
                 <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.4rem', fontSize: '0.9rem' }}>Song Title</label>
                 <input 
@@ -189,13 +201,13 @@ export default function AdminDashboard() {
         {activeTab === 'settings' && (
           <div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>⚙️ M-Pesa Receiving Settings</h2>
-            <form onSubmit={handleSaveSettings} style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '12px', maxWidth: '500px' }}>
+            <form onSubmit={handleSaveSettings} style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '12px', maxWidth: '500px', boxSizing: 'border-box' }}>
               <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.5rem' }}>M-Pesa Phone Number (Send Money)</label>
               <input 
                 type="tel" 
                 value={tempReceiveNumber} 
                 onChange={(e) => setTempReceiveNumber(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', marginBottom: '1rem' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', marginBottom: '1rem', boxSizing: 'border-box' }}
               />
               <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                 Save Settings
