@@ -114,8 +114,25 @@ export default function Storefront() {
         }
       `}</style>
 
-      {/* Sidebar Navigation */}
-      <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
+      {/* Full-Height Fixed Sidebar Navigation */}
+      <aside style={{ 
+        width: '70px', 
+        backgroundColor: '#0f172a', 
+        borderRight: '1px solid #1e293b', 
+        padding: '1.5rem 0', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '1rem', 
+        flexShrink: 0, 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        bottom: 0, 
+        height: '100vh', 
+        zIndex: 100, 
+        boxSizing: 'border-box' 
+      }}>
         <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✝️</div>
 
         {/* Home / About Icon */}
@@ -176,21 +193,19 @@ export default function Storefront() {
         </button>
       </aside>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0, paddingBottom: '6rem' }}>
+      {/* Main Content Area (Padded 70px on the left to clear the fixed sidebar) */}
+      <main style={{ flex: 1, padding: '2rem 1.5rem', marginLeft: '70px', boxSizing: 'border-box', minWidth: 0, paddingBottom: '6rem' }}>
         
-        {/* HOME / EXPANDED EYE-CATCHING AUTOBIOGRAPHY VIEW */}
+        {/* HOME / AUTOBIOGRAPHY VIEW */}
         {activeCategory === 'home' && (
-          <div style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             
-            {/* Hero Header */}
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a, #1e1b4b)', border: '1px solid #334155', borderRadius: '24px', padding: '3.5rem 2rem', textAlign: 'center', marginBottom: '2.5rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }}>
               <span style={{ fontSize: '4rem' }}>🕊️</span>
               <h1 style={{ fontSize: '2.8rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff', letterSpacing: '-0.5px' }}>Luminous Ministries & Bookstore</h1>
               <p style={{ color: '#38bdf8', fontSize: '1.3rem', fontWeight: '600', margin: 0 }}>Extraordinary Catholic Literature & Sacred Compositions by Mr. Ngotho</p>
             </div>
 
-            {/* Autobiography Story Box */}
             <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem', marginBottom: '2.5rem' }}>
               <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '1.5rem', borderBottom: '2px solid #2563eb', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span>📖</span> Meet the Author & Composer: Mr. Ngotho
