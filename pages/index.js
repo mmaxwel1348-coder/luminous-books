@@ -3,19 +3,22 @@ import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
 
 export default function Storefront() {
-  const [activeCategory, setActiveCategory] = useState('books'); // 'books' or 'music'
+  const [activeCategory, setActiveCategory] = useState('books'); // 'books', 'music', or 'cart'
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Cart State
+  const [cart, setCart] = useState([]);
+  
   // Checkout Modal State
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paying, setPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
-  // Music Catalog (Sample items ready for your tracks)
+  // Sample Music Tracks
   const musicTracks = [
     { id: 'm1', title: 'Single Release Vol. 1', artist: 'Max', price: '200', description: 'High quality audio download (MP3/WAV).' },
     { id: 'm2', title: 'Full Album Experience', artist: 'Max', price: '500', description: 'Complete digital album with exclusive bonus tracks.' },
@@ -36,6 +39,16 @@ export default function Storefront() {
     }
   }, []);
 
+  const addToCart = (item) => {
+    setCart([...cart, { ...item, cartId: Date.now() + Math.random() }]);
+  };
+
+  const removeFromCart = (cartId) => {
+    setCart(cart.filter(item => item.cartId !== cartId));
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
+
   const handleMpesaCheckout = (e) => {
     e.preventDefault();
     if (!phoneNumber || phoneNumber.length < 9) {
@@ -51,26 +64,27 @@ export default function Storefront() {
       const savedSales = localStorage.getItem('luminiousbooks_sales');
       const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
 
-      const newSale = {
-        id: Date.now(),
-        title: selectedItem.title,
-        price: selectedItem.price,
+      const newSalesList = cart.map(item => ({
+        id: Date.now() + Math.random(),
+        title: item.title,
+        price: item.price,
         phone: phoneNumber,
         date: new Date().toLocaleDateString()
-      };
+      }));
 
       const updatedSales = {
-        totalSold: salesData.totalSold + 1,
-        totalRevenue: salesData.totalRevenue + Number(selectedItem.price),
-        salesList: [newSale, ...salesData.salesList]
+        totalSold: salesData.totalSold + cart.length,
+        totalRevenue: salesData.totalRevenue + cartTotal,
+        salesList: [...newSalesList, ...salesData.salesList]
       };
 
       localStorage.setItem('luminiousbooks_sales', JSON.stringify(updatedSales));
+      setCart([]);
     }, 3000);
   };
 
   const closeModal = () => {
-    setSelectedItem(null);
+    setCheckoutOpen(false);
     setPaymentSuccess(false);
     setPhoneNumber('');
   };
@@ -117,19 +131,31 @@ export default function Storefront() {
           border: none;
           background: transparent;
           color: #94a3b8;
-          font-size: 1.5rem;
+          font-size: 1.4rem;
           cursor: pointer;
           transition: all 0.2s ease;
+          position: relative;
         }
         .nav-btn:hover { background-color: #1e293b; color: #fff; }
         .nav-btn.active { background-color: #2563eb; color: #fff; }
+        .cart-badge {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background-color: #ef4444;
+          color: white;
+          border-radius: 50%;
+          padding: 2px 6px;
+          font-size: 0.75rem;
+          font-weight: bold;
+        }
       `}</style>
 
       {/* Customer Compact Icon Sidebar */}
-      <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, sticky: 'top', height: '100vh', boxSizing: 'border-box' }}>
+      <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
         <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✨</div>
 
-        {/* Books Section Icon */}
+        {/* Books Store Icon */}
         <button 
           title="Books Store"
           onClick={() => setActiveCategory('books')}
@@ -138,7 +164,7 @@ export default function Storefront() {
           📖
         </button>
 
-        {/* Music Section Icon (Black CD) */}
+        {/* Music Store Icon */}
         <button 
           title="Music Store"
           onClick={() => setActiveCategory('music')}
@@ -146,27 +172,39 @@ export default function Storefront() {
         >
           🎛️
         </button>
+
+        {/* Shopping Cart Icon */}
+        <button 
+          title="Shopping Cart"
+          onClick={() => setActiveCategory('cart')}
+          className={`nav-btn ${activeCategory === 'cart' ? 'active' : ''}`}
+        >
+          🛒
+          {cart.length > 0 && <span className="cart-badge">{cart.length}</span>}
+        </button>
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0 }}>
-        <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem 1.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2.2rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>
-            {activeCategory === 'books' ? '📚 Discover & Buy Books' : '💿 Digital Music Catalog'}
-          </h2>
-          <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '1.5rem' }}>
-            {activeCategory === 'books' ? 'Instant delivery powered by direct M-Pesa Send Money checkout.' : 'Buy and stream exclusive music directly.'}
-          </p>
-          <input 
-            type="text" 
-            placeholder={activeCategory === 'books' ? "Search by book title or author..." : "Search music tracks..."}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ maxWidth: '550px', width: '100%', padding: '0.85rem 1.2rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
-          />
-        </div>
+      <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0, pb: '6rem' }}>
+        {activeCategory !== 'cart' && (
+          <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem 1.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '2.2rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>
+              {activeCategory === 'books' ? '📚 Discover & Buy Books' : '💿 Digital Music Catalog'}
+            </h2>
+            <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '1.5rem' }}>
+              {activeCategory === 'books' ? 'Add books to your cart and checkout via M-Pesa.' : 'Buy and stream exclusive music directly.'}
+            </p>
+            <input 
+              type="text" 
+              placeholder={activeCategory === 'books' ? "Search by book title or author..." : "Search music tracks..."}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ maxWidth: '550px', width: '100%', padding: '0.85rem 1.2rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+        )}
 
-        {/* Books Catalog View */}
+        {/* Books View */}
         {activeCategory === 'books' && (
           <div>
             {loading ? (
@@ -187,8 +225,8 @@ export default function Storefront() {
                     </div>
                     <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
                       <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
-                      <button onClick={() => setSelectedItem(book)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                        Buy via M-Pesa
+                      <button onClick={() => addToCart(book)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                        + Add to Cart
                       </button>
                     </div>
                   </div>
@@ -198,7 +236,7 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* Music Catalog View */}
+        {/* Music View */}
         {activeCategory === 'music' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
             {filteredMusic.map((track) => (
@@ -211,30 +249,88 @@ export default function Storefront() {
                 </div>
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
                   <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#34d399' }}>KES {track.price}</span>
-                  <button onClick={() => setSelectedItem(track)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                    Buy Track
+                  <button onClick={() => addToCart(track)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    + Add to Cart
                   </button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* Cart View */}
+        {activeCategory === 'cart' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '800px', margin: '0 auto' }}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>🛒 Your Shopping Cart</h2>
+            {cart.length === 0 ? (
+              <div style={{ textAlignment: 'center', backgroundColor: '#1e293b', padding: '3rem', borderRadius: '16px', textAlign: 'center', border: '1px solid #334155' }}>
+                <p style={{ color: '#94a3b8', fontSize: '1.1rem', margin: 0 }}>Your cart is empty.</p>
+              </div>
+            ) : (
+              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
+                {cart.map((item) => (
+                  <div key={item.cartId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', borderBottom: '1px solid #334155' }}>
+                    <div>
+                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.1rem' }}>{item.title}</h4>
+                      <p style={{ margin: 0, color: '#38bdf8', fontSize: '0.85rem' }}>{item.author ? `Author: ${item.author}` : `Artist: ${item.artist}`}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <span style={{ fontWeight: 'bold', color: '#34d399' }}>KES {item.price}</span>
+                      <button onClick={() => removeFromCart(item.cartId)} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '1.2rem', cursor: 'pointer' }}>🗑️</button>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1.5rem', marginTop: '0.5rem', fontWeight: 'bold', fontSize: '1.3rem' }}>
+                  <span>Total Amount:</span>
+                  <span style={{ color: '#34d399' }}>KES {cartTotal}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
-      {/* Payment Modal */}
-      {selectedItem && (
+      {/* Floating Bottom Right Checkout Button */}
+      {cart.length > 0 && (
+        <button 
+          onClick={() => setCheckoutOpen(true)}
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            backgroundColor: '#059669',
+            color: '#ffffff',
+            padding: '1rem 1.75rem',
+            borderRadius: '50px',
+            border: 'none',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+            cursor: 'pointer',
+            boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.5)',
+            zIndex: 900,
+            display: 'flex',
+            align-items: 'center',
+            gap: '10px'
+          }}
+        >
+          <span>Checkout via M-Pesa (KES {cartTotal})</span> 💳
+        </button>
+      )}
+
+      {/* M-Pesa Payment Checkout Modal */}
+      {checkoutOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)', padding: '1rem' }}>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '420px', boxSizing: 'border-box' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '440px', boxSizing: 'border-box' }}>
             {!paymentSuccess ? (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.3rem' }}>📲 M-Pesa Payment</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem' }}>📲 M-Pesa Send Money Checkout</h3>
                   <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                 </div>
                 
                 <div style={{ backgroundColor: '#0f172a', padding: '1rem', borderRadius: '10px', marginBottom: '1rem' }}>
-                  <p style={{ margin: '0 0 0.25rem 0', fontWeight: 'bold' }}>{selectedItem.title}</p>
-                  <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: 'bold' }}>Amount: KES {selectedItem.price}</p>
+                  <p style={{ margin: '0 0 0.25rem 0', color: '#94a3b8', fontSize: '0.85rem' }}>Items in Cart: {cart.length}</p>
+                  <p style={{ margin: 0, color: '#34d399', fontSize: '1.2rem', fontWeight: 'bold' }}>Total Due: KES {cartTotal}</p>
                 </div>
 
                 <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
@@ -243,7 +339,7 @@ export default function Storefront() {
                 </div>
 
                 <form onSubmit={handleMpesaCheckout}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your M-Pesa Phone Number (For Confirmation)</label>
                   <input 
                     type="tel" 
                     placeholder="0712345678" 
@@ -256,7 +352,7 @@ export default function Storefront() {
                     disabled={paying}
                     style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
                   >
-                    {paying ? 'Processing Order...' : `Confirm KES ${selectedItem.price} Sent`}
+                    {paying ? 'Processing Order...' : `Confirm KES ${cartTotal} Sent`}
                   </button>
                 </form>
               </div>
@@ -264,9 +360,9 @@ export default function Storefront() {
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
                 <h3 style={{ fontSize: '1.4rem', color: '#34d399', margin: '0 0 0.5rem 0' }}>Order Confirmed!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Thank you! Your transaction has been submitted.</p>
+                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Thank you! Your transaction has been recorded and submitted.</p>
                 <button onClick={closeModal} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Back to Store
+                  Done
                 </button>
               </div>
             )}
