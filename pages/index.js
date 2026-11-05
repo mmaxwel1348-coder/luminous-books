@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
 
 export default function Storefront() {
-  const [activeCategory, setActiveCategory] = useState('home');
+  const [activeCategory, setActiveCategory] = useState('home'); // Default is back to 'home' (Autobiography)
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +28,6 @@ export default function Storefront() {
     const fetchBooks = async () => {
       setLoading(true);
       const data = await getBooks();
-      // Add sample full text and preview text to books if they don't have them
       const enriched = data.map(b => ({
         ...b,
         summary: b.summary || b.description || 'An inspiring Catholic literary work by Mr. Ngotho providing deep spiritual insight, moral grounding, and guidance for the faithful.',
@@ -66,7 +65,7 @@ export default function Storefront() {
     setTimeout(() => {
       setPaying(false);
       setPaymentSuccess(true);
-      setIsFullBookUnlocked(true); // Unlock full reading access upon successful payment!
+      setIsFullBookUnlocked(true);
 
       const savedSales = localStorage.getItem('luminiousbooks_sales');
       const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
@@ -165,23 +164,58 @@ export default function Storefront() {
       {/* Main Content */}
       <main className="main-content" style={{ flex: 1, boxSizing: 'border-box', minWidth: 0, paddingBottom: '6rem' }}>
         
-        {/* HOME VIEW */}
+        {/* HOME / AUTOBIOGRAPHY VIEW */}
         {activeCategory === 'home' && (
-          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a, #1e1b4b)', border: '1px solid #334155', borderRadius: '24px', padding: '2.5rem 1.25rem', textAlign: 'center', marginBottom: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }}>
-              <span style={{ fontSize: '3.5rem' }}>🕊️</span>
-              <h1 style={{ fontSize: '2.2rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff' }}>Luminous Ministries & Bookstore</h1>
-              <p style={{ color: '#38bdf8', fontSize: '1.1rem', fontWeight: '600', margin: 0 }}>Extraordinary Catholic Literature & Sacred Compositions by Mr. Ngotho</p>
+          <div style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a, #1e1b4b)', border: '1px solid #334155', borderRadius: '24px', padding: '3.5rem 2rem', textAlign: 'center', marginBottom: '2.5rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }}>
+              <span style={{ fontSize: '4rem' }}>🕊️</span>
+              <h1 style={{ fontSize: '2.8rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff', letterSpacing: '-0.5px' }}>Luminous Ministries & Bookstore</h1>
+              <p style={{ color: '#38bdf8', fontSize: '1.3rem', fontWeight: '600', margin: 0 }}>Extraordinary Catholic Literature & Sacred Compositions by Mr. Ngotho</p>
             </div>
 
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '1.75rem 1.25rem', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.6rem', color: '#fff', marginBottom: '1.25rem', borderBottom: '2px solid #2563eb', paddingBottom: '0.75rem' }}>📖 Meet the Author & Composer: Mr. Ngotho</h2>
-              <p style={{ color: '#e2e8f0', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.25rem' }}>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem', marginBottom: '2.5rem' }}>
+              <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '1.5rem', borderBottom: '2px solid #2563eb', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span>📖</span> Meet the Author & Composer: Mr. Ngotho
+              </h2>
+              
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '1.5rem' }}>
                 Welcome to a sanctuary of faith, wisdom, and divine inspiration. I am <strong style={{ color: '#38bdf8' }}>Mr. Ngotho</strong>—a dedicated author, publisher, and sacred music composer called to touch souls and uplift spirits through extraordinary Catholic literature and heavenly melodies.
               </p>
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
-                <button onClick={() => setActiveCategory('books')} style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}>Browse Catholic Books 📚</button>
-                <button onClick={() => setActiveCategory('music')} style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}>Listen to Sacred Songs 🎛️</button>
+
+              <div style={{ background: '#0f172a', borderLeft: '4px solid #38bdf8', padding: '1.25rem 1.5rem', borderRadius: '0 12px 12px 0', margin: '1.5rem 0' }}>
+                <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: 0, fontSize: '1.05rem', lineHeight: '1.7' }}>
+                  "To write a page that brings someone closer to truth, and to compose a melody that echoes in prayer—this is my life's highest calling and deepest joy." — Mr. Ngotho
+                </p>
+              </div>
+
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '1.5rem' }}>
+                For years, my journey has been deeply rooted in the richness of the Catholic faith. Every book curated and published in this catalog is handpicked to provide profound spiritual nourishment, deep theological clarity, and life-changing moral grounding. Whether you are seeking spiritual growth, historical insights into the Church, or devotional guides, these extraordinary texts are designed to illuminate your path.
+              </p>
+
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '2rem' }}>
+                Beyond the printed page lies the power of sacred song. As a composer, I channel prayer into music. Each Catholic hymn and choral composition offered here is crafted to elevate congregational and personal prayer, creating an atmosphere of profound reverence and heavenly peace.
+              </p>
+
+              <h3 style={{ fontSize: '1.4rem', color: '#34d399', marginBottom: '1rem' }}>✨ Explore What Awaits You:</h3>
+              <ul style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', paddingLeft: '1.2rem', marginBottom: '2rem' }}>
+                <li><strong>Extraordinary Catholic Books:</strong> Read free summaries and buy full texts of deep doctrinal guides, saint biographies, and devotionals.</li>
+                <li><strong>Sacred Catholic Songs:</strong> Original hymns, spiritual albums, and peaceful choral tracks to quiet the mind and open the heart to God.</li>
+                <li><strong>Seamless M-Pesa Checkout:</strong> A swift, secure, and personal ordering experience managed directly with trusted mobile payments.</li>
+              </ul>
+
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem' }}>
+                <button 
+                  onClick={() => setActiveCategory('books')} 
+                  style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.9rem 1.75rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.05rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)' }}
+                >
+                  Browse Catholic Books 📚
+                </button>
+                <button 
+                  onClick={() => setActiveCategory('music')} 
+                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.9rem 1.75rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.05rem', boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)' }}
+                >
+                  Listen to Sacred Songs 🎛️
+                </button>
               </div>
             </div>
           </div>
