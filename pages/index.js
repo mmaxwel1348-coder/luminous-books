@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
 
 export default function Storefront() {
-  const [activeCategory, setActiveCategory] = useState('books');
+  const [activeCategory, setActiveCategory] = useState('home'); // Default landing page is now 'home' (Autobiography)
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -98,8 +98,8 @@ export default function Storefront() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       <Head>
-        <title>Luminous - Storefront</title>
-        <meta name="description" content="Discover books and music tracks powered by M-Pesa." />
+        <title>Luminous - Home & Storefront</title>
+        <meta name="description" content="Discover books, music tracks, and the author's journey powered by M-Pesa." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
@@ -114,9 +114,24 @@ export default function Storefront() {
         }
       `}</style>
 
+      {/* Sidebar Navigation */}
       <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
         <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✨</div>
 
+        {/* Home / About Icon */}
+        <button 
+          title="Home & About Author"
+          onClick={() => setActiveCategory('home')}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px',
+            borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : 'transparent',
+            color: '#fff', fontSize: '1.4rem', cursor: 'pointer'
+          }}
+        >
+          🏠
+        </button>
+
+        {/* Books Store Icon */}
         <button 
           title="Books Store"
           onClick={() => setActiveCategory('books')}
@@ -129,6 +144,7 @@ export default function Storefront() {
           📖
         </button>
 
+        {/* Music Store Icon */}
         <button 
           title="Music Store"
           onClick={() => setActiveCategory('music')}
@@ -141,6 +157,7 @@ export default function Storefront() {
           🎛️
         </button>
 
+        {/* Shopping Cart Icon */}
         <button 
           title="Shopping Cart"
           onClick={() => setActiveCategory('cart')}
@@ -159,8 +176,46 @@ export default function Storefront() {
         </button>
       </aside>
 
+      {/* Main Content Area */}
       <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0, paddingBottom: '6rem' }}>
-        {activeCategory !== 'cart' && (
+        
+        {/* HOME / AUTOBIOGRAPHY VIEW (First thing visitors see) */}
+        {activeCategory === 'home' && (
+          <div style={{ maxWidth: '850px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '24px', padding: '3rem 2rem', textAlign: 'center', marginBottom: '2.5rem' }}>
+              <span style={{ fontSize: '3.5rem' }}>✨</span>
+              <h1 style={{ fontSize: '2.5rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff' }}>Welcome to Luminous</h1>
+              <p style={{ color: '#38bdf8', fontSize: '1.2rem', fontWeight: '600', margin: 0 }}>Stories, Knowledge & Sound by Max</p>
+            </div>
+
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem', marginBottom: '2.5rem' }}>
+              <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem' }}>📖 About the Author & Producer</h2>
+              <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                Hello and welcome! I am Max, a passionate creator, developer, and visionary dedicated to building immersive digital experiences through literature and sound. Luminous is more than just a store—it is a creative sanctuary where ideas come to life.
+              </p>
+              <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                As an author and music producer, every book written and every beat crafted stems from a deep journey of exploration, modern tech creation, and authentic expression. My goal is to share perspectives that inspire, educate, and entertain readers and listeners worldwide.
+              </p>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem' }}>
+                <button 
+                  onClick={() => setActiveCategory('books')} 
+                  style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+                >
+                  Explore Books 📚
+                </button>
+                <button 
+                  onClick={() => setActiveCategory('music')} 
+                  style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+                >
+                  Listen & Buy Music 🎛️
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SEARCH BAR FOR STORE CATEGORIES */}
+        {activeCategory !== 'home' && activeCategory !== 'cart' && (
           <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem 1.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
             <h2 style={{ fontSize: '2.2rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>
               {activeCategory === 'books' ? '📚 Discover & Buy Books' : '💿 Digital Music Catalog'}
@@ -178,6 +233,7 @@ export default function Storefront() {
           </div>
         )}
 
+        {/* Books View */}
         {activeCategory === 'books' && (
           <div>
             {loading ? (
@@ -209,6 +265,7 @@ export default function Storefront() {
           </div>
         )}
 
+        {/* Music View */}
         {activeCategory === 'music' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
             {filteredMusic.map((track) => (
@@ -230,6 +287,7 @@ export default function Storefront() {
           </div>
         )}
 
+        {/* Cart View */}
         {activeCategory === 'cart' && (
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
             <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>🛒 Your Shopping Cart</h2>
@@ -261,6 +319,7 @@ export default function Storefront() {
         )}
       </main>
 
+      {/* Floating Checkout Button */}
       {cart.length > 0 && (
         <button 
           onClick={() => setCheckoutOpen(true)}
@@ -275,6 +334,7 @@ export default function Storefront() {
         </button>
       )}
 
+      {/* M-Pesa Payment Checkout Modal */}
       {checkoutOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)', padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '440px', boxSizing: 'border-box' }}>
