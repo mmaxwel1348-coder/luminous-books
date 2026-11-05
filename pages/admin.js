@@ -54,11 +54,11 @@ export default function AdminDashboard() {
   };
 
   const sidebarItems = [
-    { id: 'dashboard', label: 'Analytics', icon: '📊' },
+    { id: 'dashboard', label: 'Analytics Overview', icon: '📊' },
     { id: 'add', label: 'Add Book', icon: '➕' },
     { id: 'addSong', label: 'Add Song', icon: '🎛️' },
-    { id: 'orders', label: 'Orders', icon: '📦' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'orders', label: 'Orders Received', icon: '📦' },
+    { id: 'settings', label: 'M-Pesa Settings', icon: '⚙️' },
   ];
 
   return (
@@ -77,33 +77,42 @@ export default function AdminDashboard() {
           width: 100%;
           overflow-x: hidden;
         }
+        .admin-nav-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 50px;
+          height: 50px;
+          border-radius: 12px;
+          border: none;
+          background: transparent;
+          color: #94a3b8;
+          font-size: 1.4rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .admin-nav-btn:hover { background-color: #1e293b; color: #fff; }
+        .admin-nav-btn.active { background-color: #2563eb; color: #fff; }
       `}</style>
 
-      {/* Admin Sidebar */}
-      <aside style={{ width: '250px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
-        <h1 style={{ margin: '0 0 2rem 0', fontSize: '1.25rem', fontWeight: 'bold', color: '#38bdf8' }}>
-          ⚙️ STORE ADMIN
-        </h1>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '0.85rem 1rem',
-                border: 'none', borderRadius: '10px', color: activeTab === item.id ? '#fff' : '#94a3b8',
-                backgroundColor: activeTab === item.id ? '#2563eb' : 'transparent', fontWeight: '600', cursor: 'pointer'
-              }}
-            >
-              <span>{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
+      {/* Slim Compact Admin Sidebar matching Storefront style */}
+      <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
+        <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }} title="Store Admin">⚙️</div>
+
+        {sidebarItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            title={item.label}
+            className={`admin-nav-btn ${activeTab === item.id ? 'active' : ''}`}
+          >
+            {item.icon}
+          </button>
+        ))}
       </aside>
 
       {/* Main Admin Content */}
-      <main style={{ flex: 1, padding: '2rem', boxSizing: 'border-box', minWidth: 0 }}>
+      <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0 }}>
         {activeTab === 'dashboard' && (
           <div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>📊 Analytics Overview</h2>
