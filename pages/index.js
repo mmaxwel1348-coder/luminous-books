@@ -1,62 +1,38 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
-import SellerPanel from '../components/SellerPanel';
 
-export default function Home() {
+export default function Storefront() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('storefront');
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Checkout & Modal State
+  // Checkout Modal State
   const [selectedBook, setSelectedBook] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paying, setPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-
-  // Store M-Pesa Receiving Number State
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
-  const [tempReceiveNumber, setTempReceiveNumber] = useState('0712345678');
-
-  // Sales Analytics State
-  const [salesData, setSalesData] = useState({ totalSold: 0, totalRevenue: 0, salesList: [] });
-
-  const fetchBooks = async () => {
-    setLoading(true);
-    const data = await getBooks();
-    setBooks(data);
-    setLoading(false);
-  };
 
   useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      const data = await getBooks();
+      setBooks(data);
+      setLoading(false);
+    };
     fetchBooks();
-    const savedSales = localStorage.getItem('luminiousbooks_sales');
-    if (savedSales) {
-      setSalesData(JSON.parse(savedSales));
-    }
+
     const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
     if (savedPhone) {
       setMpesaReceiveNumber(savedPhone);
-      setTempReceiveNumber(savedPhone);
     }
   }, []);
-
-  const handleSaveSettings = (e) => {
-    e.preventDefault();
-    if (!tempReceiveNumber || tempReceiveNumber.length < 9) {
-      alert('Please enter a valid M-Pesa phone number.');
-      return;
-    }
-    setMpesaReceiveNumber(tempReceiveNumber);
-    localStorage.setItem('luminiousbooks_mpesa_phone', tempReceiveNumber);
-    alert('M-Pesa Send Money phone number updated successfully!');
-  };
 
   const handleMpesaCheckout = (e) => {
     e.preventDefault();
     if (!phoneNumber || phoneNumber.length < 9) {
-      alert('Please enter a valid M-Pesa phone number (e.g. 0712345678)');
+      alert('Please enter a valid M-Pesa phone number.');
       return;
     }
     setPaying(true);
@@ -64,6 +40,9 @@ export default function Home() {
     setTimeout(() => {
       setPaying(false);
       setPaymentSuccess(true);
+
+      const savedSales = localStorage.getItem('luminiousbooks_sales');
+      const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
 
       const newSale = {
         id: Date.now(),
@@ -79,7 +58,6 @@ export default function Home() {
         salesList: [newSale, ...salesData.salesList]
       };
 
-      setSalesData(updatedSales);
       localStorage.setItem('luminiousbooks_sales', JSON.stringify(updatedSales));
     }, 3000);
   };
@@ -95,319 +73,94 @@ export default function Home() {
     b.author?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sidebarItems = [
-    { id: 'storefront', label: 'Storefront', icon: '🏪' },
-    { id: 'add', label: 'Add Book', icon: '➕' },
-    { id: 'dashboard', label: 'Analytics', icon: '📊' },
-    { id: 'orders', label: 'Orders', icon: '📦' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
-  ];
-
   return (
-    <div className="app-container">
+    <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0 }}>
       <Head>
         <title>Luminous Books - Discover & Buy Books Online</title>
         <meta name="description" content="Instant downloads & physical delivery powered by secure M-Pesa checkout." />
-        <meta name="google-site-verification" content="pOV0NyJHeRUxcwsUuZ1pLx3l2MGHwaL7gE1dekfVh1s" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
       <style jsx global>{`
-        html, body {
-          margin: 0;
-          padding: 0;
-          background-color: #090d16;
-          width: 100%;
-          overflow-x: hidden;
-        }
+        html, body { margin: 0; padding: 0; background-color: #090d16; }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(15px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes pulseGlow {
-          0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
-          70% { box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-        }
         .animated-card {
           animation: fadeIn 0.5s ease-out forwards;
-          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .animated-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 25px -5px rgba(56, 189, 248, 0.2), 0 10px 10px -5px rgba(56, 189, 248, 0.1);
-        }
-        .glow-btn {
-          animation: pulseGlow 2s infinite;
-        }
-        .sidebar-btn {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          width: 100%;
-          padding: 0.85rem 1rem;
-          border: none;
-          border-radius: 10px;
-          color: #94a3b8;
-          background: transparent;
-          font-size: 0.95rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-align: left;
-        }
-        .sidebar-btn:hover {
-          background-color: #1e293b;
-          color: #f8fafc;
-        }
-        .sidebar-btn.active {
-          background-color: #2563eb;
-          color: #ffffff;
-        }
-
-        /* Layout styles */
-        .app-container {
-          display: flex;
-          min-height: 100vh;
-          background-color: #090d16;
-          color: #f8fafc;
-          font-family: Segoe UI, sans-serif;
-          margin: 0;
-          padding: 0;
-          width: 100%;
-        }
-        .app-sidebar {
-          width: 250px;
-          background-color: #0f172a;
-          border-right: 1px solid #1e293b;
-          padding: 1.5rem 1rem;
-          display: flex;
-          flex-direction: column;
-          position: sticky;
-          top: 0;
-          height: 100vh;
-          box-sizing: border-box;
-          flex-shrink: 0;
-        }
-        .app-main {
-          flex: 1;
-          padding: 2rem;
-          box-sizing: border-box;
-          min-width: 0;
-        }
-
-        /* Mobile Icon-Only Left Sidebar */
-        @media (max-width: 768px) {
-          .app-sidebar {
-            width: 68px !important;
-            padding: 1rem 0.5rem !important;
-            align-items: center;
-          }
-          .sidebar-text {
-            display: none !important;
-          }
-          .sidebar-title {
-            font-size: 1.2rem !important;
-            text-align: center;
-            padding-left: 0 !important;
-            margin-bottom: 1.5rem !important;
-          }
-          .sidebar-title-text {
-            display: none !important;
-          }
-          .sidebar-btn {
-            justify-content: center !important;
-            padding: 0.75rem 0 !important;
-            gap: 0 !important;
-          }
-          .sidebar-icon {
-            font-size: 1.4rem !important;
-          }
-          .store-status-container {
-            display: none !important;
-          }
-          .app-main {
-            padding: 1rem !important;
-          }
+          transform: translateY(-6px);
+          box-shadow: 0 15px 25px -5px rgba(56, 189, 248, 0.2);
         }
       `}</style>
 
-      {/* Side Panel / Sidebar */}
-      <aside className="app-sidebar">
-        <h1 className="sidebar-title" style={{ margin: '0 0 2rem 0', fontSize: '1.25rem', fontWeight: 'bold', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', paddingLeft: '0.5rem' }}>
-          📚 <span className="sidebar-title-text">LUMINOUS</span>
+      {/* Header Navigation for Customers */}
+      <header style={{ padding: '1.25rem 2rem', borderBottom: '1px solid #1e293b', backgroundColor: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold', background: 'linear-gradient(90deg, #38bdf8, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          📚 LUMINOUS BOOKS
         </h1>
+        <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Kenya's Online Bookstore</span>
+      </header>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`sidebar-btn ${activeTab === item.id ? 'active' : ''}`}
-            >
-              <span className="sidebar-icon" style={{ fontSize: '1.2rem' }}>{item.icon}</span>
-              <span className="sidebar-text">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="store-status-container" style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #1e293b', paddingLeft: '0.5rem', width: '100%', boxSizing: 'border-box' }}>
-          <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Store Status</p>
-          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: '#34d399', fontWeight: 'bold' }}>🟢 Live & Connected</p>
+      {/* Hero Section & Search */}
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '3rem 1.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '2.5rem', margin: '0 0 1rem 0', fontWeight: '800' }}>Discover Extraordinary Books</h2>
+          <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: '1.5rem' }}>Instant delivery powered by secure M-Pesa Send Money checkout.</p>
+          <input 
+            type="text" 
+            placeholder="Search by book title or author..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ maxWidth: '550px', width: '100%', padding: '0.85rem 1.2rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
+          />
         </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <div className="app-main">
-        {activeTab === 'storefront' && (
-          <div>
-            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '16px', padding: '2rem 1.5rem', marginBottom: '2rem', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '2rem', margin: '0 0 1rem 0', fontWeight: '800' }}>Discover & Buy Extraordinary Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: '1.5rem' }}>Instant downloads & physical delivery powered by secure M-Pesa checkout.</p>
-              <input 
-                type="text" 
-                placeholder="Search by book title or author..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ maxWidth: '600px', width: '100%', padding: '0.85rem 1.2rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            {loading ? (
-              <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '1.2rem', padding: '4rem' }}>Loading catalog from Firestore...</p>
-            ) : filteredBooks.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem', background: '#1e293b', borderRadius: '16px', border: '1px solid #334155' }}>
-                <p style={{ fontSize: '1.2rem', color: '#94a3b8' }}>No books found in your library yet.</p>
-                <button onClick={() => setActiveTab('add')} style={{ marginTop: '1rem', padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Publish Your First Book
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
-                {filteredBooks.map((book) => (
-                  <div key={book.id} className="animated-card" style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ height: '160px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', marginBottom: '1rem' }}>
-                        📖
-                      </div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
-                      <p style={{ color: '#38bdf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author}</p>
-                      <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{book.description}</p>
-                    </div>
-                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                      <span style={{ fontSize: '1.15rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
-                      <button 
-                        onClick={() => setSelectedBook(book)}
-                        className="glow-btn"
-                        style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.6rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-                      >
-                        Buy via M-Pesa
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Catalog */}
+        {loading ? (
+          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '4rem' }}>Loading catalog...</p>
+        ) : filteredBooks.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem', background: '#1e293b', borderRadius: '16px' }}>
+            <p style={{ color: '#94a3b8' }}>No books found.</p>
           </div>
-        )}
-
-        {activeTab === 'add' && (
-          <SellerPanel onBookAdded={() => { fetchBooks(); setActiveTab('storefront'); }} />
-        )}
-
-        {activeTab === 'dashboard' && (
-          <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontWeight: '700' }}>📊 Seller Analytics Dashboard</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
-                <p style={{ color: '#94a3b8', margin: '0 0 0.5rem 0' }}>Total Books Sold</p>
-                <h3 style={{ fontSize: '2.2rem', margin: 0, color: '#38bdf8' }}>{salesData.totalSold}</h3>
-              </div>
-              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
-                <p style={{ color: '#94a3b8', margin: '0 0 0.5rem 0' }}>Total Revenue Earned</p>
-                <h3 style={{ fontSize: '2.2rem', margin: 0, color: '#34d399' }}>KES {salesData.totalRevenue.toLocaleString()}</h3>
-              </div>
-            </div>
-
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Recent Transactions</h3>
-            {salesData.salesList.length === 0 ? (
-              <p style={{ color: '#94a3b8', background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>No sales recorded yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {salesData.salesList.map((sale) => (
-                  <div key={sale.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <div>
-                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.05rem' }}>{sale.title}</h4>
-                      <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>Customer Phone: {sale.phone} • {sale.date}</p>
-                    </div>
-                    <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#34d399' }}>+KES {sale.price}</span>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
+            {filteredBooks.map((book) => (
+              <div key={book.id} className="animated-card" style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ height: '180px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>
+                    📖
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'orders' && (
-          <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '700' }}>📦 Customer Orders</h2>
-            <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>Track physical shipments and eBook delivery confirmations.</p>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
-              {salesData.salesList.length === 0 ? (
-                <p style={{ color: '#94a3b8', margin: 0 }}>No pending customer orders.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {salesData.salesList.map((order) => (
-                    <div key={order.id} style={{ padding: '0.75rem 0', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <div>
-                        <p style={{ fontWeight: 'bold', margin: '0 0 0.25rem 0' }}>{order.title}</p>
-                        <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.85rem' }}>Buyer: {order.phone}</p>
-                      </div>
-                      <span style={{ backgroundColor: '#065f46', color: '#34d399', padding: '0.35rem 0.75rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                        Paid & Dispatched
-                      </span>
-                    </div>
-                  ))}
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
+                  <p style={{ color: '#38bdf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author}</p>
+                  <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{book.description}</p>
                 </div>
-              )}
-            </div>
+                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
+                  <button 
+                    onClick={() => setSelectedBook(book)}
+                    style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.2rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    Buy via M-Pesa
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-
-        {activeTab === 'settings' && (
-          <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', fontWeight: '700' }}>⚙️ Store Settings</h2>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', maxWidth: '600px' }}>
-              <h3 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>📱 M-Pesa Send Money Settings</h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-                Enter the personal phone number where customers will send money directly via M-Pesa.
-              </p>
-              <form onSubmit={handleSaveSettings}>
-                <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Receiving Phone Number (Send Money)</label>
-                <input 
-                  type="tel" 
-                  placeholder="e.g. 0712345678" 
-                  value={tempReceiveNumber}
-                  onChange={(e) => setTempReceiveNumber(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.25rem', boxSizing: 'border-box' }} 
-                />
-                <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Save Phone Number
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
+      </main>
 
       {/* M-Pesa Checkout Modal */}
       {selectedBook && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)', padding: '1rem' }}>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '420px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', boxSizing: 'border-box' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)', padding: '1rem' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '420px' }}>
             {!paymentSuccess ? (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.3rem' }}>📲 M-Pesa Direct Payment</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem' }}>📲 M-Pesa Payment</h3>
                   <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                 </div>
                 
@@ -416,19 +169,19 @@ export default function Home() {
                   <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: 'bold' }}>Amount: KES {selectedBook.price}</p>
                 </div>
 
-                <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.25rem' }}>
+                <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
                   <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Money To:</p>
-                  <p style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
+                  <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
                 </div>
 
                 <form onSubmit={handleMpesaCheckout}>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your Phone Number (For Confirmation)</label>
                   <input 
                     type="tel" 
                     placeholder="0712345678" 
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.25rem', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.5rem', boxSizing: 'border-box' }}
                   />
                   <button 
                     type="submit" 
@@ -442,13 +195,10 @@ export default function Home() {
             ) : (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
-                <h3 style={{ fontSize: '1.4rem', margin: '0 0 0.5rem 0', color: '#34d399' }}>Order Received!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.95rem' }}>Thank you! Your payment has been confirmed and logged in the Seller Dashboard.</p>
-                <button 
-                  onClick={closeModal}
-                  style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  Back to Storefront
+                <h3 style={{ fontSize: '1.4rem', color: '#34d399', margin: '0 0 0.5rem 0' }}>Order Received!</h3>
+                <p style={{ color: '#94a3b8', marginBottom: '1.5rem' }}>Thank you! Your payment confirmation has been recorded.</p>
+                <button onClick={closeModal} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  Back to Store
                 </button>
               </div>
             )}
