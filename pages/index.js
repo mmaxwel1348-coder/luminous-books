@@ -6,10 +6,6 @@ export default function Storefront() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Search States
-  const [bookSearch, setBookSearch] = useState('');
-  const [musicSearch, setMusicSearch] = useState('');
-  
   const [cart, setCart] = useState([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -100,18 +96,8 @@ export default function Storefront() {
     setPhoneNumber('');
   };
 
-  const filteredBooks = books.filter(b => 
-    b.title?.toLowerCase().includes(bookSearch.toLowerCase()) ||
-    b.author?.toLowerCase().includes(bookSearch.toLowerCase())
-  );
-
   const localSongs = JSON.parse(localStorage.getItem('luminiousmusic_local_catalog') || '[]');
   const allSongs = [...localSongs, ...musicTracks];
-
-  const filteredMusic = allSongs.filter(m =>
-    m.title?.toLowerCase().includes(musicSearch.toLowerCase()) ||
-    m.artist?.toLowerCase().includes(musicSearch.toLowerCase())
-  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
@@ -197,107 +183,73 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* BOOKS VIEW WITH SEARCH BAR */}
+        {/* BOOKS VIEW */}
         {activeCategory === 'books' && (
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Catholic Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.25rem' }}>Search summaries and buy full spiritual literature by Mr. Ngotho.</p>
-              
-              <div style={{ position: 'relative', maxWidth: '550px', margin: '0 auto' }}>
-                <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>🔍</span>
-                <input 
-                  type="text" 
-                  placeholder="Search books by title or author..."
-                  value={bookSearch}
-                  onChange={(e) => setBookSearch(e.target.value)}
-                  style={{ width: '100%', padding: '0.85rem 1.2rem 0.85rem 2.8rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read summaries and buy full spiritual literature by Mr. Ngotho.</p>
             </div>
 
-            {filteredBooks.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem', background: '#1e293b', borderRadius: '16px', border: '1px solid #334155' }}>
-                <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>No books found matching "{bookSearch}".</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
-                {filteredBooks.map((book) => (
-                  <div key={book.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ height: '140px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>✝️</div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
-                      <p style={{ color: '#38bdf8', margin: '0 0 0.75rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author || 'Mr. Ngotho'}</p>
-                      <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{book.summary}</p>
-                    </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
+              {books.map((book) => (
+                <div key={book.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ height: '140px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>✝️</div>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
+                    <p style={{ color: '#38bdf8', margin: '0 0 0.75rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author || 'Mr. Ngotho'}</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{book.summary}</p>
+                  </div>
 
-                    <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
-                        <button 
-                          onClick={() => setSelectedBook(book)}
-                          style={{ backgroundColor: '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
-                        >
-                          📖 Read Summary
-                        </button>
-                      </div>
+                  <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#34d399' }}>KES {book.price}</span>
                       <button 
-                        onClick={() => addToCart(book)} 
-                        style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                        onClick={() => setSelectedBook(book)}
+                        style={{ backgroundColor: '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
                       >
-                        + Add to Cart (KES {book.price})
+                        📖 Read Summary
                       </button>
                     </div>
+                    <button 
+                      onClick={() => addToCart(book)} 
+                      style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                    >
+                      + Add to Cart (KES {book.price})
+                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* MUSIC VIEW WITH SEARCH BAR */}
+        {/* MUSIC VIEW */}
         {activeCategory === 'music' && (
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>💿 Sacred Catholic Music Catalog</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.25rem' }}>Search soul-stirring hymns and spiritual audio tracks.</p>
-              
-              <div style={{ position: 'relative', maxWidth: '550px', margin: '0 auto' }}>
-                <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>🔍</span>
-                <input 
-                  type="text" 
-                  placeholder="Search music by title or composer..."
-                  value={musicSearch}
-                  onChange={(e) => setMusicSearch(e.target.value)}
-                  style={{ width: '100%', padding: '0.85rem 1.2rem 0.85rem 2.8rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Soul-stirring hymns and spiritual audio tracks.</p>
             </div>
 
-            {filteredMusic.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem', background: '#1e293b', borderRadius: '16px', border: '1px solid #334155' }}>
-                <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>No music found matching "{musicSearch}".</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
-                {filteredMusic.map((track) => (
-                  <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ height: '140px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎵</div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
-                      <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Composer: {track.artist || 'Mr. Ngotho'}</p>
-                      <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{track.description}</p>
-                    </div>
-                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                      <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#34d399' }}>KES {track.price}</span>
-                      <button onClick={() => addToCart(track)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                        + Add to Cart
-                      </button>
-                    </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
+              {allSongs.map((track) => (
+                <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ height: '140px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎵</div>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
+                    <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Composer: {track.artist || 'Mr. Ngotho'}</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{track.description}</p>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#34d399' }}>KES {track.price}</span>
+                    <button onClick={() => addToCart(track)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1.1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                      + Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -416,7 +368,7 @@ export default function Storefront() {
                   <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                 </div>
                 
-                <div style={{ backgroundColor: '#0f172a', padding: '0.85rem', borderRadius: '10px', marginBottom: '1rem' }}>
+                <div style={{ backgroundColor: '#0f172a', padding: '0.85rem', borderRadius: '10px', marginBottom: '1.0rem' }}>
                   <p style={{ margin: '0 0 0.25rem 0', color: '#94a3b8', fontSize: '0.85rem' }}>Items in Cart: {cart.length}</p>
                   <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: 'bold' }}>Total Due: KES {cartTotal}</p>
                 </div>
