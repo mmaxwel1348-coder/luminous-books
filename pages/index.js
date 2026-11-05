@@ -3,22 +3,18 @@ import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
 
 export default function Storefront() {
-  const [activeCategory, setActiveCategory] = useState('books'); // 'books', 'music', or 'cart'
+  const [activeCategory, setActiveCategory] = useState('books');
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Cart State
   const [cart, setCart] = useState([]);
-  
-  // Checkout Modal State
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paying, setPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
-  // Sample Music Tracks
   const musicTracks = [
     { id: 'm1', title: 'Single Release Vol. 1', artist: 'Max', price: '200', description: 'High quality audio download (MP3/WAV).' },
     { id: 'm2', title: 'Full Album Experience', artist: 'Max', price: '500', description: 'Complete digital album with exclusive bonus tracks.' },
@@ -107,85 +103,52 @@ export default function Storefront() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      <style jsx global>{`
-        html, body { margin: 0; padding: 0; background-color: #090d16; }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animated-card {
-          animation: fadeIn 0.4s ease-out forwards;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .animated-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 15px 25px -5px rgba(56, 189, 248, 0.2);
-        }
-        .nav-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 50px;
-          height: 50px;
-          border-radius: 12px;
-          border: none;
-          background: transparent;
-          color: #94a3b8;
-          font-size: 1.4rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          position: relative;
-        }
-        .nav-btn:hover { background-color: #1e293b; color: #fff; }
-        .nav-btn.active { background-color: #2563eb; color: #fff; }
-        .cart-badge {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          background-color: #ef4444;
-          color: white;
-          border-radius: 50%;
-          padding: 2px 6px;
-          font-size: 0.75rem;
-          font-weight: bold;
-        }
-      `}</style>
-
-      {/* Customer Compact Icon Sidebar */}
       <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
         <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✨</div>
 
-        {/* Books Store Icon */}
         <button 
           title="Books Store"
           onClick={() => setActiveCategory('books')}
-          className={`nav-btn ${activeCategory === 'books' ? 'active' : ''}`}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px',
+            borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : 'transparent',
+            color: '#fff', fontSize: '1.4rem', cursor: 'pointer'
+          }}
         >
           📖
         </button>
 
-        {/* Music Store Icon */}
         <button 
           title="Music Store"
           onClick={() => setActiveCategory('music')}
-          className={`nav-btn ${activeCategory === 'music' ? 'active' : ''}`}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px',
+            borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : 'transparent',
+            color: '#fff', fontSize: '1.4rem', cursor: 'pointer'
+          }}
         >
           🎛️
         </button>
 
-        {/* Shopping Cart Icon */}
         <button 
           title="Shopping Cart"
           onClick={() => setActiveCategory('cart')}
-          className={`nav-btn ${activeCategory === 'cart' ? 'active' : ''}`}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px',
+            borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : 'transparent',
+            color: '#fff', fontSize: '1.4rem', cursor: 'pointer', position: 'relative'
+          }}
         >
           🛒
-          {cart.length > 0 && <span className="cart-badge">{cart.length}</span>}
+          {cart.length > 0 && (
+            <span style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+              {cart.length}
+            </span>
+          )}
         </button>
       </aside>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0, pb: '6rem' }}>
+      <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0, paddingBottom: '6rem' }}>
         {activeCategory !== 'cart' && (
           <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem 1.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
             <h2 style={{ fontSize: '2.2rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>
@@ -204,7 +167,6 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* Books View */}
         {activeCategory === 'books' && (
           <div>
             {loading ? (
@@ -216,7 +178,7 @@ export default function Storefront() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
                 {filteredBooks.map((book) => (
-                  <div key={book.id} className="animated-card" style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div key={book.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ height: '160px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>📖</div>
                       <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
@@ -236,11 +198,10 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* Music View */}
         {activeCategory === 'music' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
             {filteredMusic.map((track) => (
-              <div key={track.id} className="animated-card" style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ height: '160px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎛️</div>
                   <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
@@ -258,12 +219,11 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* Cart View */}
         {activeCategory === 'cart' && (
-          <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
             <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>🛒 Your Shopping Cart</h2>
             {cart.length === 0 ? (
-              <div style={{ textAlignment: 'center', backgroundColor: '#1e293b', padding: '3rem', borderRadius: '16px', textAlign: 'center', border: '1px solid #334155' }}>
+              <div style={{ backgroundColor: '#1e293b', padding: '3rem', borderRadius: '16px', textAlign: 'center', border: '1px solid #334155' }}>
                 <p style={{ color: '#94a3b8', fontSize: '1.1rem', margin: 0 }}>Your cart is empty.</p>
               </div>
             ) : (
@@ -290,34 +250,20 @@ export default function Storefront() {
         )}
       </main>
 
-      {/* Floating Bottom Right Checkout Button */}
       {cart.length > 0 && (
         <button 
           onClick={() => setCheckoutOpen(true)}
           style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            backgroundColor: '#059669',
-            color: '#ffffff',
-            padding: '1rem 1.75rem',
-            borderRadius: '50px',
-            border: 'none',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            cursor: 'pointer',
-            boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.5)',
-            zIndex: 900,
-            display: 'flex',
-            align-items: 'center',
-            gap: '10px'
+            position: 'fixed', bottom: '24px', right: '24px', backgroundColor: '#059669', color: '#ffffff',
+            padding: '1rem 1.75rem', borderRadius: '50px', border: 'none', fontWeight: 'bold', fontSize: '1.1rem',
+            cursor: 'pointer', boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.5)', zIndex: 900,
+            display: 'flex', alignItems: 'center', gap: '10px'
           }}
         >
           <span>Checkout via M-Pesa (KES {cartTotal})</span> 💳
         </button>
       )}
 
-      {/* M-Pesa Payment Checkout Modal */}
       {checkoutOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)', padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '440px', boxSizing: 'border-box' }}>
