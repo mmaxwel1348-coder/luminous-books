@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { getBooks } from '../lib/firebase';
 
 export default function Storefront() {
-  const [activeCategory, setActiveCategory] = useState('home'); // Default landing page is now 'home' (Autobiography)
+  const [activeCategory, setActiveCategory] = useState('home');
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,8 +16,8 @@ export default function Storefront() {
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
   const musicTracks = [
-    { id: 'm1', title: 'Single Release Vol. 1', artist: 'Max', price: '200', description: 'High quality audio download (MP3/WAV).' },
-    { id: 'm2', title: 'Full Album Experience', artist: 'Max', price: '500', description: 'Complete digital album with exclusive bonus tracks.' },
+    { id: 'm1', title: 'Sacred Hymns Vol. 1', artist: 'Mr. Ngotho', price: '200', description: 'Inspiring Catholic choral and devotional audio collection (MP3/WAV).' },
+    { id: 'm2', title: 'Divine Grace - Full Album', artist: 'Mr. Ngotho', price: '500', description: 'Complete uplifting Catholic musical experience with soul-stirring melodies.' },
   ];
 
   useEffect(() => {
@@ -98,8 +98,8 @@ export default function Storefront() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       <Head>
-        <title>Luminous - Home & Storefront</title>
-        <meta name="description" content="Discover books, music tracks, and the author's journey powered by M-Pesa." />
+        <title>Luminous - Mr. Ngotho's Bookstore & Sacred Music</title>
+        <meta name="description" content="Discover extraordinary Catholic books and sacred music compositions by Mr. Ngotho." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
@@ -116,7 +116,7 @@ export default function Storefront() {
 
       {/* Sidebar Navigation */}
       <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
-        <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✨</div>
+        <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✝️</div>
 
         {/* Home / About Icon */}
         <button 
@@ -133,7 +133,7 @@ export default function Storefront() {
 
         {/* Books Store Icon */}
         <button 
-          title="Books Store"
+          title="Catholic Books Store"
           onClick={() => setActiveCategory('books')}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px',
@@ -146,7 +146,7 @@ export default function Storefront() {
 
         {/* Music Store Icon */}
         <button 
-          title="Music Store"
+          title="Sacred Catholic Music"
           onClick={() => setActiveCategory('music')}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px',
@@ -179,35 +179,60 @@ export default function Storefront() {
       {/* Main Content Area */}
       <main style={{ flex: 1, padding: '2rem 1.5rem', boxSizing: 'border-box', minWidth: 0, paddingBottom: '6rem' }}>
         
-        {/* HOME / AUTOBIOGRAPHY VIEW (First thing visitors see) */}
+        {/* HOME / EXPANDED EYE-CATCHING AUTOBIOGRAPHY VIEW */}
         {activeCategory === 'home' && (
-          <div style={{ maxWidth: '850px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
-            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '24px', padding: '3rem 2rem', textAlign: 'center', marginBottom: '2.5rem' }}>
-              <span style={{ fontSize: '3.5rem' }}>✨</span>
-              <h1 style={{ fontSize: '2.5rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff' }}>Welcome to Luminous</h1>
-              <p style={{ color: '#38bdf8', fontSize: '1.2rem', fontWeight: '600', margin: 0 }}>Stories, Knowledge & Sound by Max</p>
+          <div style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+            
+            {/* Hero Header */}
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a, #1e1b4b)', border: '1px solid #334155', borderRadius: '24px', padding: '3.5rem 2rem', textAlign: 'center', marginBottom: '2.5rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)' }}>
+              <span style={{ fontSize: '4rem' }}>🕊️</span>
+              <h1 style={{ fontSize: '2.8rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff', letterSpacing: '-0.5px' }}>Luminous Ministries & Bookstore</h1>
+              <p style={{ color: '#38bdf8', fontSize: '1.3rem', fontWeight: '600', margin: 0 }}>Extraordinary Catholic Literature & Sacred Compositions by Mr. Ngotho</p>
             </div>
 
+            {/* Autobiography Story Box */}
             <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem', marginBottom: '2.5rem' }}>
-              <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem' }}>📖 About the Author & Producer</h2>
-              <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
-                Hello and welcome! I am Max, a passionate creator, developer, and visionary dedicated to building immersive digital experiences through literature and sound. Luminous is more than just a store—it is a creative sanctuary where ideas come to life.
+              <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '1.5rem', borderBottom: '2px solid #2563eb', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span>📖</span> Meet the Author & Composer: Mr. Ngotho
+              </h2>
+              
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '1.5rem' }}>
+                Welcome to a sanctuary of faith, wisdom, and divine inspiration. I am <strong style={{ color: '#38bdf8' }}>Mr. Ngotho</strong>—a dedicated author, publisher, and sacred music composer called to touch souls and uplift spirits through extraordinary Catholic literature and heavenly melodies.
               </p>
-              <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
-                As an author and music producer, every book written and every beat crafted stems from a deep journey of exploration, modern tech creation, and authentic expression. My goal is to share perspectives that inspire, educate, and entertain readers and listeners worldwide.
+
+              <div style={{ background: '#0f172a', borderLeft: '4px solid #38bdf8', padding: '1.25rem 1.5rem', borderRadius: '0 12px 12px 0', margin: '1.5rem 0' }}>
+                <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: 0, fontSize: '1.05rem', lineHeight: '1.7' }}>
+                  "To write a page that brings someone closer to truth, and to compose a melody that echoes in prayer—this is my life's highest calling and deepest joy." — Mr. Ngotho
+                </p>
+              </div>
+
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '1.5rem' }}>
+                For years, my journey has been deeply rooted in the richness of the Catholic faith. Every book curated and published in this catalog is handpicked to provide profound spiritual nourishment, deep theological clarity, and life-changing moral grounding. Whether you are seeking spiritual growth, historical insights into the Church, or devotional guides, these extraordinary texts are designed to illuminate your path.
               </p>
+
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '2rem' }}>
+                Beyond the printed page lies the power of sacred song. As a composer, I channel prayer into music. Each Catholic hymn and choral composition offered here is crafted to elevate congregational and personal prayer, creating an atmosphere of profound reverence and heavenly peace.
+              </p>
+
+              <h3 style={{ fontSize: '1.4rem', color: '#34d399', marginBottom: '1rem' }}>✨ Explore What Awaits You:</h3>
+              <ul style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', paddingLeft: '1.2rem', marginBottom: '2rem' }}>
+                <li><strong>Extraordinary Catholic Books:</strong> Deep doctrinal guides, inspiring biographies of saints, and powerful devotionals.</li>
+                <li><strong>Sacred Catholic Songs:</strong> Original hymns, spiritual albums, and peaceful choral tracks to quiet the mind and open the heart to God.</li>
+                <li><strong>Seamless M-Pesa Checkout:</strong> A swift, secure, and personal ordering experience managed directly with trusted mobile payments.</li>
+              </ul>
+
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem' }}>
                 <button 
                   onClick={() => setActiveCategory('books')} 
-                  style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+                  style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.9rem 1.75rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.05rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)' }}
                 >
-                  Explore Books 📚
+                  Browse Catholic Books 📚
                 </button>
                 <button 
                   onClick={() => setActiveCategory('music')} 
-                  style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.9rem 1.75rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.05rem', boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)' }}
                 >
-                  Listen & Buy Music 🎛️
+                  Listen to Sacred Songs 🎛️
                 </button>
               </div>
             </div>
@@ -218,14 +243,14 @@ export default function Storefront() {
         {activeCategory !== 'home' && activeCategory !== 'cart' && (
           <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem 1.5rem', marginBottom: '2.5rem', textAlign: 'center' }}>
             <h2 style={{ fontSize: '2.2rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>
-              {activeCategory === 'books' ? '📚 Discover & Buy Books' : '💿 Digital Music Catalog'}
+              {activeCategory === 'books' ? '📚 Extraordinary Catholic Books' : '💿 Sacred Catholic Music Catalog'}
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '1.5rem' }}>
-              {activeCategory === 'books' ? 'Add books to your cart and checkout via M-Pesa.' : 'Buy and stream exclusive music directly.'}
+              {activeCategory === 'books' ? 'Handpicked spiritual literature by Mr. Ngotho.' : 'Soul-stirring hymns and spiritual compositions.'}
             </p>
             <input 
               type="text" 
-              placeholder={activeCategory === 'books' ? "Search by book title or author..." : "Search music tracks..."}
+              placeholder={activeCategory === 'books' ? "Search by book title..." : "Search sacred tracks..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ maxWidth: '550px', width: '100%', padding: '0.85rem 1.2rem', borderRadius: '12px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
@@ -247,9 +272,9 @@ export default function Storefront() {
                 {filteredBooks.map((book) => (
                   <div key={book.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ height: '160px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>📖</div>
+                      <div style={{ height: '160px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>✝️</div>
                       <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
-                      <p style={{ color: '#38bdf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author}</p>
+                      <p style={{ color: '#38bdf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author || 'Mr. Ngotho'}</p>
                       <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{book.description}</p>
                     </div>
                     <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
@@ -271,9 +296,9 @@ export default function Storefront() {
             {filteredMusic.map((track) => (
               <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ height: '160px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎛️</div>
+                  <div style={{ height: '160px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎵</div>
                   <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
-                  <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Artist: {track.artist}</p>
+                  <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Composer: {track.artist}</p>
                   <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{track.description}</p>
                 </div>
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
@@ -301,7 +326,7 @@ export default function Storefront() {
                   <div key={item.cartId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', borderBottom: '1px solid #334155' }}>
                     <div>
                       <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.1rem' }}>{item.title}</h4>
-                      <p style={{ margin: 0, color: '#38bdf8', fontSize: '0.85rem' }}>{item.author ? `Author: ${item.author}` : `Artist: ${item.artist}`}</p>
+                      <p style={{ margin: 0, color: '#38bdf8', fontSize: '0.85rem' }}>{item.author ? `Author: ${item.author}` : `Composer: ${item.artist}`}</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <span style={{ fontWeight: 'bold', color: '#34d399' }}>KES {item.price}</span>
@@ -351,7 +376,7 @@ export default function Storefront() {
                 </div>
 
                 <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
-                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Money To:</p>
+                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Money To (Mr. Ngotho):</p>
                   <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
                 </div>
 
