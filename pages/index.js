@@ -30,7 +30,6 @@ export default function Storefront() {
   useEffect(() => {
     const fetchBooks = async () => {
       setLoading(true);
-      // Load both Firebase books and locally added admin books seamlessly
       const firebaseData = await getBooks();
       const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
       const combinedBooks = [...localBooks, ...firebaseData];
@@ -102,7 +101,6 @@ export default function Storefront() {
     setPhoneNumber('');
   };
 
-  // Filter books and music based on their individual search bars
   const filteredBooks = books.filter(b => 
     b.title?.toLowerCase().includes(bookSearch.toLowerCase()) ||
     b.author?.toLowerCase().includes(bookSearch.toLowerCase())
@@ -196,7 +194,7 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* 📚 BOOKS VIEW WITH SEARCH BAR */}
+        {/* BOOKS VIEW WITH SEARCH BAR */}
         {activeCategory === 'books' && (
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
@@ -257,7 +255,7 @@ export default function Storefront() {
           </div>
         )}
 
-        {/* 🎛️ MUSIC VIEW WITH SEARCH BAR */}
+        {/* MUSIC VIEW WITH SEARCH BAR */}
         {activeCategory === 'music' && (
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
@@ -336,7 +334,7 @@ export default function Storefront() {
         )}
       </main>
 
-      {/* 📖 BOOK READER & SUMMARY PREVIEW MODAL */}
+      {/* BOOK READER MODAL */}
       {selectedBook && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(5px)', padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '650px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
