@@ -96,12 +96,23 @@ export default function Storefront() {
   );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0 }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       <Head>
         <title>Luminous - Storefront</title>
         <meta name="description" content="Discover books and music tracks powered by M-Pesa." />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
+
+      <style jsx global>{`
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background-color: #090d16 !important;
+          color: #f8fafc;
+          width: 100%;
+          overflow-x: hidden;
+        }
+      `}</style>
 
       <aside style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxSizing: 'border-box' }}>
         <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>✨</div>
