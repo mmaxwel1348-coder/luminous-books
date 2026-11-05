@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { getBooks } from '../lib/firebase';
 
 export default function Storefront() {
   const [activeCategory, setActiveCategory] = useState('home');
@@ -22,27 +21,27 @@ export default function Storefront() {
   const [selectedBook, setSelectedBook] = useState(null);
   const [isFullBookUnlocked, setIsFullBookUnlocked] = useState(false);
 
+  const defaultBooks = [
+    {
+      id: 'b1',
+      title: 'A HERITAGE OF GOLD',
+      author: 'Dr. Peter Ngotho Njoroge',
+      price: '600',
+      summary: 'Are our youth lost, or are they a treasure waiting to be discovered? In a world wounded by moral confusion, broken families, and a widening generational gap, mentorship is no longer a luxury—it is a lifeline. In A Heritage of Gold, Dr. Peter Ngotho Njoroge invites parents, teachers, and guardians on an eye-opening journey into the sacred responsibility of guiding the next generation. Beneath the surface of every young person lies untapped potential and divine brilliance. This book explores the heart of mentorship, tackles the silent crisis facing the boy child, masterfully guides communication and counseling, and provides crucial safeguards for building a safe, life-giving legacy. Read the preview and unlock full chapter access today!',
+      fullText: '[CHAPTER 1: UNDERSTANDING MENTORSHIP]\n\nMentorship is a relationship in which a more experienced or knowledgeable individual guides and supports the personal or professional growth of another...\n\n[CHAPTER 2: THE SACRIFICE OF MENTORSHIP]\n\nTo sacrifice means giving up something valuable for the benefit of someone else. In mentorship, this might include our time, comfort, personal space, or material resources...\n\n[CHAPTER 3: THE BOY CHILD DEBATE]\n\ln recent years, a growing debate has emerged around the plight of the boy child, sparked by grave concern over the state of modern boys...'
+    }
+  ];
+
   const musicTracks = [
     { id: 'm1', title: 'Sacred Hymns Vol. 1', artist: 'Mr. Ngotho', price: '200', description: 'Inspiring Catholic choral and devotional audio collection (MP3/WAV).' },
     { id: 'm2', title: 'Divine Grace - Full Album', artist: 'Mr. Ngotho', price: '500', description: 'Complete uplifting Catholic musical experience with soul-stirring melodies.' },
   ];
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      setLoading(true);
-      const firebaseData = await getBooks();
-      const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
-      const combinedBooks = [...localBooks, ...firebaseData];
-
-      const enriched = combinedBooks.map(b => ({
-        ...b,
-        summary: b.summary || b.description || 'An inspiring Catholic literary work by Mr. Ngotho providing deep spiritual insight, moral grounding, and guidance for the faithful.',
-        fullText: b.fullText || `[CHAPTER 1: THE CALL TO FAITH]\n\nWelcome to the complete text of "${b.title}". \n\nIn this profound work, Mr. Ngotho guides the reader through the foundational pillars of prayer, devotion, and spiritual resilience. Every page is designed to open your heart to divine grace...\n\n[CHAPTER 2: WALKING IN LIGHT]\n\nAs we navigate the challenges of the modern world, holding fast to our Catholic traditions anchors our soul. May these words bring you peace, courage, and everlasting strength.`
-      }));
-      setBooks(enriched);
-      setLoading(false);
-    };
-    fetchBooks();
+    const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
+    const combined = localBooks.length > 0 ? [...localBooks, ...defaultBooks] : defaultBooks;
+    setBooks(combined);
+    setLoading(false);
 
     const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
     if (savedPhone) {
@@ -92,7 +91,7 @@ export default function Storefront() {
 
       localStorage.setItem('luminiousbooks_sales', JSON.stringify(updatedSales));
       setCart([]);
-    }, 3000);
+    }, 2000);
   };
 
   const closeModal = () => {
@@ -201,7 +200,6 @@ export default function Storefront() {
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Catholic Books</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.25rem' }}>Search summaries and buy full spiritual literature by Mr. Ngotho.</p>
               
-              {/* Book Search Input */}
               <div style={{ position: 'relative', maxWidth: '550px', margin: '0 auto' }}>
                 <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>🔍</span>
                 <input 
@@ -214,9 +212,7 @@ export default function Storefront() {
               </div>
             </div>
 
-            {loading ? (
-              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '4rem' }}>Loading catalog...</p>
-            ) : filteredBooks.length === 0 ? (
+            {filteredBooks.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '4rem', background: '#1e293b', borderRadius: '16px', border: '1px solid #334155' }}>
                 <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>No books found matching "{bookSearch}".</p>
               </div>
@@ -262,7 +258,6 @@ export default function Storefront() {
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>💿 Sacred Catholic Music Catalog</h2>
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '1.25rem' }}>Search soul-stirring hymns and spiritual audio tracks.</p>
               
-              {/* Music Search Input */}
               <div style={{ position: 'relative', maxWidth: '550px', margin: '0 auto' }}>
                 <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>🔍</span>
                 <input 
