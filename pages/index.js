@@ -34,15 +34,19 @@ export default function Storefront() {
   ];
 
   useEffect(() => {
-    const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
-    const combined = localBooks.length > 0 ? [...localBooks, ...defaultBooks] : defaultBooks;
-    setBooks(combined);
-    setLoading(false);
+    try {
+      const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
+      const combined = localBooks.length > 0 ? [...localBooks, ...defaultBooks] : defaultBooks;
+      setBooks(combined);
 
-    const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
-    if (savedPhone) {
-      setMpesaReceiveNumber(savedPhone);
+      const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
+      if (savedPhone) {
+        setMpesaReceiveNumber(savedPhone);
+      }
+    } catch (e) {
+      setBooks(defaultBooks);
     }
+    setLoading(false);
   }, []);
 
   const addToCart = (item) => {
@@ -68,24 +72,29 @@ export default function Storefront() {
       setPaymentSuccess(true);
       setIsFullBookUnlocked(true);
 
-      const savedSales = localStorage.getItem('luminiousbooks_sales');
-      const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
+      try {
+        const savedSales = localStorage.getItem('luminiousbooks_sales');
+        const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
 
-      const newSalesList = cart.map(item => ({
-        id: Date.now() + Math.random(),
-        title: item.title,
-        price: item.price,
-        phone: phoneNumber,
-        date: new Date().toLocaleDateString()
-      }));
+        const newSalesList = cart.map(item => ({
+          id: Date.now() + Math.random(),
+          title: item.title,
+          price: item.price,
+          phone: phoneNumber,
+          date: new Date().toLocaleDateString()
+        }));
 
-      const updatedSales = {
-        totalSold: salesData.totalSold + cart.length,
-        totalRevenue: salesData.totalRevenue + cartTotal,
-        salesList: [...newSalesList, ...salesData.salesList]
-      };
+        const updatedSales = {
+          totalSold: salesData.totalSold + cart.length,
+          totalRevenue: salesData.totalRevenue + cartTotal,
+          salesList: [...newSalesList, ...salesData.salesList]
+        };
 
-      localStorage.setItem('luminiousbooks_sales', JSON.stringify(updatedSales));
+        localStorage.setItem('luminiousbooks_sales', JSON.stringify(updatedSales));
+      } catch (err) {
+        console.error(err);
+      }
+
       setCart([]);
     }, 2000);
   };
@@ -96,7 +105,12 @@ export default function Storefront() {
     setPhoneNumber('');
   };
 
-  const localSongs = JSON.parse(localStorage.getItem('luminiousmusic_local_catalog') || '[]');
+  let localSongs = [];
+  try {
+    localSongs = JSON.parse(localStorage.getItem('luminiousmusic_local_catalog') || '[]');
+  } catch (e) {
+    localSongs = [];
+  }
   const allSongs = [...localSongs, ...musicTracks];
 
   return (
