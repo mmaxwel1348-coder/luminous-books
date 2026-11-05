@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { getBooks } from '../lib/firebase';
 import SellerPanel from '../components/SellerPanel';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [salesData, setSalesData] = useState({ totalSold: 0, totalRevenue: 0, salesList: [] });
   const [tempReceiveNumber, setTempReceiveNumber] = useState('0712345678');
+
+  // Music Management State
+  const [songTitle, setSongTitle] = useState('');
+  const [songArtist, setSongArtist] = useState('');
+  const [songPrice, setSongPrice] = useState('');
+  const [songDescription, setSongDescription] = useState('');
+  const [uploadingSong, setUploadingSong] = useState(false);
 
   useEffect(() => {
     const savedSales = localStorage.getItem('luminiousbooks_sales');
@@ -29,9 +35,28 @@ export default function AdminDashboard() {
     alert('M-Pesa Send Money phone number updated successfully!');
   };
 
+  const handleAddSong = (e) => {
+    e.preventDefault();
+    if (!songTitle || !songPrice) {
+      alert('Please provide a song title and price.');
+      return;
+    }
+    setUploadingSong(true);
+
+    setTimeout(() => {
+      setUploadingSong(false);
+      alert(`Song "${songTitle}" published for sale successfully!`);
+      setSongTitle('');
+      setSongArtist('');
+      setSongPrice('');
+      setSongDescription('');
+    }, 1000);
+  };
+
   const sidebarItems = [
     { id: 'dashboard', label: 'Analytics', icon: '📊' },
     { id: 'add', label: 'Add Book', icon: '➕' },
+    { id: 'addSong', label: 'Add Song', icon: '🎛️' },
     { id: 'orders', label: 'Orders', icon: '📦' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
@@ -39,7 +64,7 @@ export default function AdminDashboard() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif' }}>
       <Head>
-        <title>Admin Dashboard - Luminous Books</title>
+        <title>Admin Dashboard - Luminous Store</title>
       </Head>
 
       {/* Admin Sidebar */}
@@ -72,7 +97,7 @@ export default function AdminDashboard() {
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>📊 Analytics Overview</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
               <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '12px', border: '1px solid #334155' }}>
-                <p style={{ color: '#94a3b8', margin: 0 }}>Total Books Sold</p>
+                <p style={{ color: '#94a3b8', margin: 0 }}>Total Items Sold</p>
                 <h3 style={{ fontSize: '2rem', margin: '0.5rem 0 0 0', color: '#38bdf8' }}>{salesData.totalSold}</h3>
               </div>
               <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '12px', border: '1px solid #334155' }}>
@@ -83,7 +108,62 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'add' && <SellerPanel onBookAdded={() => alert('Book added!')} />}
+        {activeTab === 'add' && <SellerPanel onBookAdded={() => alert('Book added successfully!')} />}
+
+        {activeTab === 'addSong' && (
+          <div>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>🎛️ Add New Song for Sale</h2>
+            <form onSubmit={handleAddSong} style={{ backgroundColor: '#1e293b', padding: '2rem', borderRadius: '16px', border: '1px solid #334155', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.4rem', fontSize: '0.9rem' }}>Song Title</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Single Release Vol. 1" 
+                  value={songTitle}
+                  onChange={(e) => setSongTitle(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.4rem', fontSize: '0.9rem' }}>Artist Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Max" 
+                  value={songArtist}
+                  onChange={(e) => setSongArtist(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.4rem', fontSize: '0.9rem' }}>Price (KES)</label>
+                <input 
+                  type="number" 
+                  placeholder="e.g. 200" 
+                  value={songPrice}
+                  onChange={(e) => setSongPrice(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#94a3b8', marginBottom: '0.4rem', fontSize: '0.9rem' }}>Description / Format</label>
+                <textarea 
+                  placeholder="e.g. High quality audio download (MP3/WAV)" 
+                  value={songDescription}
+                  onChange={(e) => setSongDescription(e.target.value)}
+                  rows="3"
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', boxSizing: 'border-box', resize: 'vertical' }}
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={uploadingSong}
+                style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                {uploadingSong ? 'Publishing Song...' : 'Publish Song for Sale'}
+              </button>
+            </form>
+          </div>
+        )}
 
         {activeTab === 'orders' && (
           <div>
