@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Head from 'next/head';
 
+// Paste your own book text here (separate paragraphs with a blank line)
+const YOUR_BOOK_TEXT = `CHAPTER ONE: INTRODUCTION
+Replace this with your own chapter or section text. Separate paragraphs with an empty line so pagination splits cleanly across pages.
+
+Add another paragraph here to test how pages break across mobile and desktop screens.`;
+
 const MAJOR_HEADING_REGEX =
   /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|CONCLUSION|EPILOGUE|APPENDIX|BIBLIOGRAPHY)/i;
 
@@ -80,11 +86,11 @@ export default function Storefront() {
     () => [
       {
         id: 'b1',
-        title: 'Sample Book Title',
+        title: 'Your Book Title',
         author: 'Author Name',
         price: '600',
-        summary: 'Sample book summary for preview and checkout testing.',
-        fullText: ''
+        summary: 'Add a short summary of your book here for visitors browsing the catalog.',
+        fullText: YOUR_BOOK_TEXT
       }
     ],
     []
@@ -93,10 +99,10 @@ export default function Storefront() {
   const defaultSongs = [
     {
       id: 'm1',
-      title: 'Devotional Track 1',
-      artist: 'Artist Name',
+      title: 'Featured Audio Track',
+      artist: 'Composer Name',
       price: '200',
-      description: 'Audio track sample.',
+      description: 'Add your audio description here.',
       previewAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       fullAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
     }
@@ -625,11 +631,11 @@ export default function Storefront() {
               </h1>
 
               <p style={{ color: '#f1f5f9', fontSize: '1.05rem', lineHeight: 1.8, marginBottom: '1rem', maxWidth: '72ch' }}>
-                Add the author&apos;s autobiography here so it sits clearly over the dark fade while keeping the portrait subtly visible behind it.
+                Paste your author autobiography here so it sits clearly over the dark gradient overlay while keeping the portrait subtly framed behind it.
               </p>
 
               <p style={{ color: '#cbd5e1', fontSize: '1rem', lineHeight: 1.8, marginBottom: '1.75rem', maxWidth: '72ch' }}>
-                Share background, writing journey, and ministry details here with strong contrast for easy reading.
+                Add your writing background, mentorship focus, and music composition details here.
               </p>
 
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
