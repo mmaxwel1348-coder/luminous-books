@@ -371,6 +371,8 @@ export default function Storefront() {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pageFlipAnim, setPageFlipAnim] = useState(false);
   const touchStartXRef = useRef(null);
+  const touchStartYRef = useRef(null);
+  const pageSurfaceRef = useRef(null);
 
   // Music Player Modal State
   const [selectedSong, setSelectedSong] = useState(null);
@@ -477,6 +479,9 @@ export default function Storefront() {
     setSelectedBook(book);
     setCurrentPageIndex(0);
     setBookmarkToast('');
+    if (pageSurfaceRef.current) {
+      pageSurfaceRef.current.scrollTop = 0;
+    }
   };
 
   const flipToPage = (nextIdx) => {
@@ -484,6 +489,9 @@ export default function Storefront() {
     setPageFlipAnim(true);
     setTimeout(() => {
       setCurrentPageIndex(nextIdx);
+      if (pageSurfaceRef.current) {
+        pageSurfaceRef.current.scrollTop = 0;
+      }
       setPageFlipAnim(false);
     }, 130);
   };
@@ -526,14 +534,29 @@ export default function Storefront() {
   const handleTouchStart = (e) => {
     if (e.touches && e.touches.length > 0) {
       touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
     }
   };
 
   const handleTouchEnd = (e) => {
-    if (touchStartXRef.current === null || !e.changedTouches || e.changedTouches.length === 0) return;
+    if (
+      touchStartXRef.current === null ||
+      touchStartYRef.current === null ||
+      !e.changedTouches ||
+      e.changedTouches.length === 0
+    ) {
+      return;
+    }
     const diffX = touchStartXRef.current - e.changedTouches[0].clientX;
+    const diffY = touchStartYRef.current - e.changedTouches[0].clientY;
     touchStartXRef.current = null;
-    if (Math.abs(diffX) > 45) {
+    touchStartYRef.current = null;
+
+    const absX = Math.abs(diffX);
+    const absY = Math.abs(diffY);
+
+    // Ignore vertical scrolling gestures; only flip on clear horizontal swipes
+    if (absX > 65 && absX > absY * 1.35) {
       if (diffX > 0) {
         flipToPage(currentPageIndex + 1);
       } else {
@@ -1144,7 +1167,10 @@ export default function Storefront() {
             </div>
           ) : (
             <>
-              <div className={`book-page-surface ${pageFlipAnim ? 'book-page-flipping' : ''}`}>
+              <div
+                ref={pageSurfaceRef}
+                className={`book-page-surface ${pageFlipAnim ? 'book-page-flipping' : ''}`}
+              >
                 <div>
                   <div
                     style={{
