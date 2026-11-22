@@ -360,7 +360,6 @@ export default function Storefront() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
-  // Unlocked items, bookmarks & reader preferences
   const [unlockedBookIds, setUnlockedBookIds] = useState([]);
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
   const [bookBookmarks, setBookBookmarks] = useState({});
@@ -370,7 +369,6 @@ export default function Storefront() {
   const [controlsHidden, setControlsHidden] = useState(false);
   const [jumpPageInput, setJumpPageInput] = useState('');
 
-  // Reader State
   const [selectedBook, setSelectedBook] = useState(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pageFlipAnim, setPageFlipAnim] = useState(false);
@@ -379,7 +377,6 @@ export default function Storefront() {
   const pageSurfaceRef = useRef(null);
   const lastScrollTopRef = useRef(0);
 
-  // Music Player State
   const [selectedSong, setSelectedSong] = useState(null);
 
   const defaultBooks = useMemo(
@@ -910,7 +907,6 @@ export default function Storefront() {
                 boxShadow: '0 18px 40px rgba(0, 0, 0, 0.4)'
               }}
             >
-              {/* Author Portrait Placed at the Top of the Autobiography */}
               <div
                 style={{
                   display: 'flex',
@@ -1089,7 +1085,6 @@ export default function Storefront() {
         )}
       </main>
 
-      {/* FULL-SCREEN BOOK READER */}
       {selectedBook && (
         <div className="fullscreen-reader-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
           <div className={`reader-mini-bar ${controlsHidden ? 'reader-controls-hidden' : ''}`}>
@@ -1166,7 +1161,6 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* AUDIO PLAYER MODAL */}
       {selectedSong && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '480px' }}>
@@ -1180,14 +1174,12 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* FLOATING CHECKOUT BUTTON */}
       {cart.length > 0 && (
         <button onClick={() => setCheckoutOpen(true)} style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#059669', color: '#fff', padding: '0.85rem 1.4rem', borderRadius: '50px', border: 'none', fontWeight: 'bold', cursor: 'pointer', zIndex: 900 }}>
           Checkout (KES {cartTotal}) 💳
         </button>
       )}
 
-      {/* CHECKOUT MODAL */}
       {checkoutOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '420px' }}>
