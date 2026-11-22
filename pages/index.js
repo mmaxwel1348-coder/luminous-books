@@ -306,6 +306,9 @@ For the glory of your name. Amen.
 BIBLIOGRAPHY
 Includes references from the Holy Bible, Church documents and papal/saint quotes, books and referenced authors, and additional sources.`;
 
+const MAJOR_HEADING_REGEX =
+  /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|CONCLUSION TO THE BOOK|CLOSING PRAYER|BIBLIOGRAPHY)/i;
+
 function paginateBookText(rawText, charsPerPage = 720) {
   if (!rawText || !rawText.trim()) return [];
   const paragraphs = rawText
@@ -318,12 +321,9 @@ function paginateBookText(rawText, charsPerPage = 720) {
   let currentLen = 0;
 
   for (const para of paragraphs) {
-    const isHeading =
-      /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|CONCLUSION TO THE BOOK|CLOSING PRAYER|BIBLIOGRAPHY)/i.test(
-        para.split('\n')[0]
-      );
+    const isHeading = MAJOR_HEADING_REGEX.test(para.split('\n')[0]);
 
-    if (isHeading && currentBlocks.length > 0 && currentLen > 140) {
+    if (isHeading && currentBlocks.length > 0 && currentLen > 120) {
       pages.push(currentBlocks);
       currentBlocks = [para];
       currentLen = para.length;
@@ -351,6 +351,7 @@ export default function Storefront() {
   const [activeCategory, setActiveCategory] = useState('home');
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
 
   const [cart, setCart] = useState([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -362,6 +363,8 @@ export default function Storefront() {
   // Track which specific book IDs & song IDs have been paid for
   const [unlockedBookIds, setUnlockedBookIds] = useState([]);
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
+  const [bookBookmarks, setBookBookmarks] = useState({});
+  const [bookmarkToast, setBookmarkToast] = useState('');
 
   // Reader Modal State (Books)
   const [selectedBook, setSelectedBook] = useState(null);
@@ -406,6 +409,13 @@ export default function Storefront() {
   ];
 
   useEffect(() => {
+    const checkViewport = () => setIsMobileScreen(window.innerWidth <= 768);
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
+
+  useEffect(() => {
     try {
       const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
       const combinedBooks = localBooks.length > 0 ? [...localBooks, ...defaultBooks] : defaultBooks;
@@ -421,6 +431,9 @@ export default function Storefront() {
 
       const savedUnlockedSongs = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_songs') || '[]');
       setUnlockedSongIds(savedUnlockedSongs);
+
+      const savedBookmarks = JSON.parse(localStorage.getItem('luminiousbooks_bookmarks') || '{}');
+      setBookBookmarks(savedBookmarks);
     } catch (e) {
       setBooks(defaultBooks);
     }
@@ -429,12 +442,41 @@ export default function Storefront() {
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
-    return paginateBookText(selectedBook.fullText || selectedBook.summary || '', 720);
-  }, [selectedBook]);
+    const budget = isMobileScreen ? 420 : 720;
+    return paginateBookText(selectedBook.fullText || selectedBook.summary || '', budget);
+  }, [selectedBook, isMobileScreen]);
+
+  const chapterJumpOptions = useMemo(() => {
+    const options = [{ label: 'Start / Cover Info', pageIndex: 0 }];
+    bookPages.forEach((blocks, pageIdx) => {
+      for (const block of blocks) {
+        const firstLine = (block.split('\n')[0] || '').trim();
+        if (MAJOR_HEADING_REGEX.test(firstLine)) {
+          options.push({
+            label: firstLine.length > 48 ? `${firstLine.slice(0, 45)}...` : firstLine,
+            pageIndex: pageIdx
+          });
+          break;
+        }
+      }
+    });
+    return options;
+  }, [bookPages]);
+
+  const activeChapterPageIndex = useMemo(() => {
+    let matched = 0;
+    for (const opt of chapterJumpOptions) {
+      if (opt.pageIndex <= currentPageIndex) {
+        matched = opt.pageIndex;
+      }
+    }
+    return matched;
+  }, [chapterJumpOptions, currentPageIndex]);
 
   const openBookReader = (book) => {
     setSelectedBook(book);
     setCurrentPageIndex(0);
+    setBookmarkToast('');
   };
 
   const flipToPage = (nextIdx) => {
@@ -445,6 +487,30 @@ export default function Storefront() {
       setPageFlipAnim(false);
     }, 130);
   };
+
+  const saveBookmarkForCurrentPage = () => {
+    if (!selectedBook || bookPages.length === 0) return;
+    const clampedIdx = Math.min(Math.max(currentPageIndex, 0), bookPages.length - 1);
+    const updatedBookmarks = {
+      ...bookBookmarks,
+      [selectedBook.id]: clampedIdx
+    };
+    setBookBookmarks(updatedBookmarks);
+    try {
+      localStorage.setItem('luminiousbooks_bookmarks', JSON.stringify(updatedBookmarks));
+    } catch (err) {
+      console.error(err);
+    }
+    setBookmarkToast(`Saved p.${clampedIdx + 1}`);
+    setTimeout(() => setBookmarkToast(''), 1800);
+  };
+
+  const savedBookmarkPageIndex = useMemo(() => {
+    if (!selectedBook || bookPages.length === 0) return null;
+    const rawIdx = bookBookmarks[selectedBook.id];
+    if (typeof rawIdx !== 'number' || Number.isNaN(rawIdx)) return null;
+    return Math.min(Math.max(rawIdx, 0), bookPages.length - 1);
+  }, [selectedBook, bookBookmarks, bookPages.length]);
 
   useEffect(() => {
     if (!selectedBook) return;
@@ -562,22 +628,19 @@ export default function Storefront() {
     return blocks.map((block, idx) => {
       const lines = block.split('\n').filter(Boolean);
       const firstLine = lines[0] || '';
-      const isMajorHeading =
-        /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|CONCLUSION TO THE BOOK|CLOSING PRAYER|BIBLIOGRAPHY)/i.test(
-          firstLine.trim()
-        );
+      const isMajorHeading = MAJOR_HEADING_REGEX.test(firstLine.trim());
 
       if (isMajorHeading) {
         const restLines = lines.slice(1).join('\n');
         return (
-          <div key={idx} style={{ marginBottom: '1rem' }}>
+          <div key={idx} style={{ marginBottom: '0.95rem' }}>
             <div
               style={{
                 background: 'linear-gradient(90deg, rgba(180, 130, 35, 0.18), rgba(180, 130, 35, 0.03))',
                 borderLeft: '4px solid #b45309',
-                padding: '0.65rem 1rem',
+                padding: '0.6rem 0.95rem',
                 borderRadius: '0 10px 10px 0',
-                marginBottom: restLines ? '0.75rem' : 0
+                marginBottom: restLines ? '0.7rem' : 0
               }}
             >
               <div
@@ -587,7 +650,7 @@ export default function Storefront() {
                   textTransform: 'uppercase',
                   color: '#92400e',
                   fontWeight: 700,
-                  marginBottom: '0.18rem'
+                  marginBottom: '0.16rem'
                 }}
               >
                 ✦ Luminous Edition ✦
@@ -596,7 +659,7 @@ export default function Storefront() {
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '1.25rem',
+                  fontSize: '1.22rem',
                   lineHeight: 1.32,
                   color: '#1e1b18',
                   letterSpacing: '0.03em'
@@ -610,8 +673,8 @@ export default function Storefront() {
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '1.05rem',
-                  lineHeight: 1.72,
+                  fontSize: '1.02rem',
+                  lineHeight: 1.68,
                   color: '#292524',
                   whiteSpace: 'pre-line'
                 }}
@@ -635,9 +698,9 @@ export default function Storefront() {
           <h5
             key={idx}
             style={{
-              margin: '0.9rem 0 0.4rem 0',
+              margin: '0.85rem 0 0.35rem 0',
               fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: '1.08rem',
+              fontSize: '1.06rem',
               fontWeight: 700,
               color: '#78350f',
               borderBottom: '1px solid rgba(120, 53, 15, 0.18)',
@@ -653,10 +716,10 @@ export default function Storefront() {
         <p
           key={idx}
           style={{
-            margin: '0 0 0.8rem 0',
+            margin: '0 0 0.75rem 0',
             fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '1.05rem',
-            lineHeight: 1.72,
+            fontSize: '1.02rem',
+            lineHeight: 1.68,
             color: '#292524',
             whiteSpace: 'pre-line'
           }}
@@ -700,10 +763,12 @@ export default function Storefront() {
           flex-direction: column;
           padding: 0.9rem 1.25rem;
           overflow: hidden;
+          min-height: 0;
         }
 
         .book-page-surface {
           flex: 1;
+          min-height: 0;
           width: 100%;
           max-width: 1080px;
           margin: 0 auto;
@@ -720,7 +785,8 @@ export default function Storefront() {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          overflow: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
           transition: transform 0.13s ease, opacity 0.13s ease;
         }
 
@@ -945,13 +1011,14 @@ export default function Storefront() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
+              flexWrap: 'wrap',
               gap: '0.75rem',
               borderBottom: '1px solid rgba(217, 172, 74, 0.25)',
               paddingBottom: '0.6rem',
               flexShrink: 0
             }}
           >
-            <div style={{ minWidth: 0 }}>
+            <div style={{ minWidth: 0, flex: '1 1 200px' }}>
               <span style={{ fontSize: '0.7rem', color: isBookUnlocked(selectedBook.id) ? '#fbbf24' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, display: 'block' }}>
                 {isBookUnlocked(selectedBook.id) ? '✦ Full-Screen Book Reader ✦' : '📖 Free Summary & Preview'}
               </span>
@@ -959,6 +1026,81 @@ export default function Storefront() {
                 {selectedBook.title}
               </h3>
             </div>
+
+            {isBookUnlocked(selectedBook.id) && (
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.45rem', flex: '0 1 auto' }}>
+                <button
+                  type="button"
+                  onClick={saveBookmarkForCurrentPage}
+                  style={{
+                    backgroundColor: savedBookmarkPageIndex === currentPageIndex ? '#047857' : '#1e293b',
+                    color: '#fef3c7',
+                    border: '1px solid rgba(217, 172, 74, 0.45)',
+                    borderRadius: '8px',
+                    padding: '0.45rem 0.7rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {bookmarkToast || `🔖 Bookmark p.${currentPageIndex + 1}`}
+                </button>
+
+                {savedBookmarkPageIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={() => flipToPage(savedBookmarkPageIndex)}
+                    style={{
+                      backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                      color: '#fde68a',
+                      border: '1px solid rgba(217, 172, 74, 0.45)',
+                      borderRadius: '8px',
+                      padding: '0.45rem 0.7rem',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Go to Bookmark (p.{savedBookmarkPageIndex + 1})
+                  </button>
+                )}
+
+                {chapterJumpOptions.length > 0 && (
+                  <>
+                    <label
+                      htmlFor="chapter-jump-select"
+                      style={{ fontSize: '0.78rem', color: '#fde68a', fontWeight: 600, whiteSpace: 'nowrap' }}
+                    >
+                      Chapter:
+                    </label>
+                    <select
+                      id="chapter-jump-select"
+                      aria-label="Jump to chapter or section"
+                      value={activeChapterPageIndex}
+                      onChange={(e) => flipToPage(Number(e.target.value))}
+                      style={{
+                        backgroundColor: '#0f172a',
+                        color: '#fef3c7',
+                        border: '1px solid rgba(217, 172, 74, 0.45)',
+                        borderRadius: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.85rem',
+                        maxWidth: '220px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {chapterJumpOptions.map((opt) => (
+                        <option key={`${opt.label}-${opt.pageIndex}`} value={opt.pageIndex}>
+                          {opt.label} (p.{opt.pageIndex + 1})
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+              </div>
+            )}
 
             <button
               onClick={() => setSelectedBook(null)}
@@ -980,7 +1122,7 @@ export default function Storefront() {
 
           {/* Reader Content Area */}
           {!isBookUnlocked(selectedBook.id) ? (
-            <div style={{ flex: 1, width: '100%', maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem' }}>
+            <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', overflowY: 'auto' }}>
               <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '14px', border: '1px solid #334155' }}>
                 <h4 style={{ margin: '0 0 0.6rem 0', color: '#38bdf8', fontSize: '1.1rem' }}>Book Summary</h4>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: 0, fontSize: '1.05rem' }}>{selectedBook.summary}</p>
@@ -1027,6 +1169,7 @@ export default function Storefront() {
                 <div
                   style={{
                     paddingTop: '0.5rem',
+                    marginTop: '0.75rem',
                     borderTop: '1px solid rgba(146, 64, 14, 0.18)',
                     textAlign: 'center',
                     fontSize: '0.84rem',
