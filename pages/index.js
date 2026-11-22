@@ -360,50 +360,54 @@ export default function Storefront() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
+  // Track which specific book IDs & song IDs have been paid for
   const [unlockedBookIds, setUnlockedBookIds] = useState([]);
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
   const [bookBookmarks, setBookBookmarks] = useState({});
   const [bookmarkToast, setBookmarkToast] = useState('');
-  const [fontScale, setFontScale] = useState(1.03);
-  const [nightMode, setNightMode] = useState(false);
-  const [controlsHidden, setControlsHidden] = useState(false);
-  const [jumpPageInput, setJumpPageInput] = useState('');
 
+  // Reader Modal State (Books)
   const [selectedBook, setSelectedBook] = useState(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pageFlipAnim, setPageFlipAnim] = useState(false);
   const touchStartXRef = useRef(null);
   const touchStartYRef = useRef(null);
   const pageSurfaceRef = useRef(null);
-  const lastScrollTopRef = useRef(0);
 
+  // Music Player Modal State
   const [selectedSong, setSelectedSong] = useState(null);
 
-  const defaultBooks = useMemo(
-    () => [
-      {
-        id: 'b1',
-        title: 'A Heritage of Gold: Unveiling the Treasure in Our Youth',
-        author: 'Dr. Peter Ngotho Njoroge',
-        price: '600',
-        summary:
-          'A practical and faith-rooted guide for mentors, parents, teachers, and youth leaders on discovering and nurturing the gold within young people.',
-        fullText: FULL_HERITAGE_OF_GOLD_TEXT
-      }
-    ],
-    []
-  );
+  const defaultBooks = [
+    {
+      id: 'b1',
+      title: 'A HERITAGE OF GOLD',
+      author: 'Dr. Peter Ngotho Njoroge',
+      price: '600',
+      summary:
+        'Unveiling the Treasure in Our Youth. In a world wounded by moral confusion, broken families, and widening generational gaps, mentorship is no longer a luxury—it is a lifeline. Discover how parents, teachers, mentors, and leaders can recognize and draw out the gold within every young person.',
+      fullText: FULL_HERITAGE_OF_GOLD_TEXT
+    }
+  ];
 
   const defaultSongs = [
     {
       id: 'm1',
-      title: 'Featured Audio Track',
-      artist: 'Composer Name',
+      title: 'Sacred Hymns Vol. 1',
+      artist: 'Dr. Peter Ngotho Njoroge',
       price: '200',
-      description: 'Add your audio description here.',
+      description: 'Inspiring choral and devotional audio collection (MP3/WAV).',
       previewAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       fullAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-    }
+    },
+    {
+      id: 'm2',
+      title: 'Divine Grace - Full Album',
+      artist: 'Dr. Peter Ngotho Njoroge',
+      price: '500',
+      description: 'Complete uplifting musical experience with soul-stirring melodies.',
+      previewAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+      fullAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
+    },
   ];
 
   useEffect(() => {
@@ -416,20 +420,27 @@ export default function Storefront() {
   useEffect(() => {
     try {
       const localBooks = JSON.parse(localStorage.getItem('luminiousbooks_local_catalog') || '[]');
-      setBooks(localBooks.length > 0 ? [...localBooks, ...defaultBooks] : defaultBooks);
+      const combinedBooks = localBooks.length > 0 ? [...localBooks, ...defaultBooks] : defaultBooks;
+      setBooks(combinedBooks);
 
       const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
-      if (savedPhone) setMpesaReceiveNumber(savedPhone);
+      if (savedPhone) {
+        setMpesaReceiveNumber(savedPhone);
+      }
 
-      setUnlockedBookIds(JSON.parse(localStorage.getItem('luminiousbooks_unlocked_books') || '[]'));
-      setUnlockedSongIds(JSON.parse(localStorage.getItem('luminiousbooks_unlocked_songs') || '[]'));
-      setBookBookmarks(JSON.parse(localStorage.getItem('luminiousbooks_bookmarks') || '{}'));
+      const savedUnlockedBooks = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_books') || '[]');
+      setUnlockedBookIds(savedUnlockedBooks);
+
+      const savedUnlockedSongs = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_songs') || '[]');
+      setUnlockedSongIds(savedUnlockedSongs);
+
+      const savedBookmarks = JSON.parse(localStorage.getItem('luminiousbooks_bookmarks') || '{}');
+      setBookBookmarks(savedBookmarks);
     } catch (e) {
       setBooks(defaultBooks);
-    } finally {
-      setLoading(false);
     }
-  }, [defaultBooks]);
+    setLoading(false);
+  }, []);
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
@@ -438,13 +449,13 @@ export default function Storefront() {
   }, [selectedBook, isMobileScreen]);
 
   const chapterJumpOptions = useMemo(() => {
-    const options = [{ label: 'Start', pageIndex: 0 }];
+    const options = [{ label: 'Start / Cover Info', pageIndex: 0 }];
     bookPages.forEach((blocks, pageIdx) => {
       for (const block of blocks) {
         const firstLine = (block.split('\n')[0] || '').trim();
         if (MAJOR_HEADING_REGEX.test(firstLine)) {
           options.push({
-            label: firstLine.length > 42 ? `${firstLine.slice(0, 39)}...` : firstLine,
+            label: firstLine.length > 48 ? `${firstLine.slice(0, 45)}...` : firstLine,
             pageIndex: pageIdx
           });
           break;
@@ -457,29 +468,20 @@ export default function Storefront() {
   const activeChapterPageIndex = useMemo(() => {
     let matched = 0;
     for (const opt of chapterJumpOptions) {
-      if (opt.pageIndex <= currentPageIndex) matched = opt.pageIndex;
+      if (opt.pageIndex <= currentPageIndex) {
+        matched = opt.pageIndex;
+      }
     }
     return matched;
   }, [chapterJumpOptions, currentPageIndex]);
 
-  const isBookUnlocked = (bookId) => unlockedBookIds.includes(bookId);
-  const isSongUnlocked = (songId) => unlockedSongIds.includes(songId);
-
   const openBookReader = (book) => {
     setSelectedBook(book);
+    setCurrentPageIndex(0);
     setBookmarkToast('');
-    setControlsHidden(false);
-    setJumpPageInput('');
-    lastScrollTopRef.current = 0;
-
-    const savedIdx = bookBookmarks[book.id];
-    if (isBookUnlocked(book.id) && typeof savedIdx === 'number' && savedIdx >= 0) {
-      setCurrentPageIndex(savedIdx);
-    } else {
-      setCurrentPageIndex(0);
+    if (pageSurfaceRef.current) {
+      pageSurfaceRef.current.scrollTop = 0;
     }
-
-    if (pageSurfaceRef.current) pageSurfaceRef.current.scrollTop = 0;
   };
 
   const flipToPage = (nextIdx) => {
@@ -487,26 +489,20 @@ export default function Storefront() {
     setPageFlipAnim(true);
     setTimeout(() => {
       setCurrentPageIndex(nextIdx);
-      setControlsHidden(false);
-      lastScrollTopRef.current = 0;
-      if (pageSurfaceRef.current) pageSurfaceRef.current.scrollTop = 0;
+      if (pageSurfaceRef.current) {
+        pageSurfaceRef.current.scrollTop = 0;
+      }
       setPageFlipAnim(false);
     }, 130);
-  };
-
-  const handleDirectPageJump = (e) => {
-    e.preventDefault();
-    const pageNum = parseInt(jumpPageInput, 10);
-    if (!Number.isNaN(pageNum) && pageNum >= 1 && pageNum <= bookPages.length) {
-      flipToPage(pageNum - 1);
-      setJumpPageInput('');
-    }
   };
 
   const saveBookmarkForCurrentPage = () => {
     if (!selectedBook || bookPages.length === 0) return;
     const clampedIdx = Math.min(Math.max(currentPageIndex, 0), bookPages.length - 1);
-    const updatedBookmarks = { ...bookBookmarks, [selectedBook.id]: clampedIdx };
+    const updatedBookmarks = {
+      ...bookBookmarks,
+      [selectedBook.id]: clampedIdx
+    };
     setBookBookmarks(updatedBookmarks);
     try {
       localStorage.setItem('luminiousbooks_bookmarks', JSON.stringify(updatedBookmarks));
@@ -537,16 +533,6 @@ export default function Storefront() {
     if (typeof rawIdx !== 'number' || Number.isNaN(rawIdx)) return null;
     return Math.min(Math.max(rawIdx, 0), bookPages.length - 1);
   }, [selectedBook, bookBookmarks, bookPages.length]);
-
-  const handlePageScroll = (e) => {
-    const currentTop = e.currentTarget.scrollTop;
-    if (currentTop > lastScrollTopRef.current + 12 && currentTop > 40) {
-      setControlsHidden(true);
-    } else if (currentTop < lastScrollTopRef.current - 12 || currentTop <= 10) {
-      setControlsHidden(false);
-    }
-    lastScrollTopRef.current = currentTop;
-  };
 
   useEffect(() => {
     if (!selectedBook) return;
@@ -582,14 +568,24 @@ export default function Storefront() {
 
     const absX = Math.abs(diffX);
     const absY = Math.abs(diffY);
+
     if (absX > 65 && absX > absY * 1.35) {
-      if (diffX > 0) flipToPage(currentPageIndex + 1);
-      else flipToPage(currentPageIndex - 1);
+      if (diffX > 0) {
+        flipToPage(currentPageIndex + 1);
+      } else {
+        flipToPage(currentPageIndex - 1);
+      }
     }
   };
 
-  const addToCart = (item) => setCart([...cart, { ...item, cartId: Date.now() + Math.random() }]);
-  const removeFromCart = (cartId) => setCart(cart.filter((item) => item.cartId !== cartId));
+  const addToCart = (item) => {
+    setCart([...cart, { ...item, cartId: Date.now() + Math.random() }]);
+  };
+
+  const removeFromCart = (cartId) => {
+    setCart(cart.filter(item => item.cartId !== cartId));
+  };
+
   const cartTotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
 
   const handleMpesaCheckout = (e) => {
@@ -605,11 +601,11 @@ export default function Storefront() {
       setPaymentSuccess(true);
 
       const purchasedBookIds = cart
-        .filter((item) => item.fullText !== undefined || String(item.id).startsWith('b'))
-        .map((item) => item.id);
+        .filter(item => item.fullText !== undefined || String(item.id).startsWith('b'))
+        .map(item => item.id);
       const purchasedSongIds = cart
-        .filter((item) => item.description !== undefined && !item.fullText && !String(item.id).startsWith('b'))
-        .map((item) => item.id);
+        .filter(item => item.description !== undefined && !item.fullText && !String(item.id).startsWith('b'))
+        .map(item => item.id);
 
       const updatedBookIds = Array.from(new Set([...unlockedBookIds, ...purchasedBookIds]));
       const updatedSongIds = Array.from(new Set([...unlockedSongIds, ...purchasedSongIds]));
@@ -620,12 +616,31 @@ export default function Storefront() {
       try {
         localStorage.setItem('luminiousbooks_unlocked_books', JSON.stringify(updatedBookIds));
         localStorage.setItem('luminiousbooks_unlocked_songs', JSON.stringify(updatedSongIds));
+
+        const savedSales = localStorage.getItem('luminiousbooks_sales');
+        const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
+
+        const newSalesList = cart.map(item => ({
+          id: Date.now() + Math.random(),
+          title: item.title,
+          price: item.price,
+          phone: phoneNumber,
+          date: new Date().toLocaleDateString()
+        }));
+
+        const updatedSales = {
+          totalSold: salesData.totalSold + cart.length,
+          totalRevenue: salesData.totalRevenue + cartTotal,
+          salesList: [...newSalesList, ...salesData.salesList]
+        };
+
+        localStorage.setItem('luminiousbooks_sales', JSON.stringify(updatedSales));
       } catch (err) {
         console.error(err);
       }
 
       setCart([]);
-    }, 1500);
+    }, 2000);
   };
 
   const closeModal = () => {
@@ -642,11 +657,10 @@ export default function Storefront() {
   }
   const allSongs = localSongs.length > 0 ? [...localSongs, ...defaultSongs] : defaultSongs;
 
-  const renderBookPageBlocks = (blocks) => {
-    const headingColor = nightMode ? '#fbbf24' : '#1e1b18';
-    const subheadingColor = nightMode ? '#fcd34d' : '#78350f';
-    const bodyColor = nightMode ? '#e2e8f0' : '#292524';
+  const isBookUnlocked = (bookId) => unlockedBookIds.includes(bookId);
+  const isSongUnlocked = (songId) => unlockedSongIds.includes(songId);
 
+  const renderBookPageBlocks = (blocks) => {
     return blocks.map((block, idx) => {
       const lines = block.split('\n').filter(Boolean);
       const firstLine = lines[0] || '';
@@ -665,13 +679,26 @@ export default function Storefront() {
                 marginBottom: restLines ? '0.7rem' : 0
               }}
             >
+              <div
+                style={{
+                  fontSize: '0.68rem',
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: '#92400e',
+                  fontWeight: 700,
+                  marginBottom: '0.16rem'
+                }}
+              >
+                ✦ Luminous Edition ✦
+              </div>
               <h4
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: `${fontScale * 1.18}rem`,
+                  fontSize: '1.22rem',
                   lineHeight: 1.32,
-                  color: headingColor
+                  color: '#1e1b18',
+                  letterSpacing: '0.03em'
                 }}
               >
                 {firstLine}
@@ -682,9 +709,9 @@ export default function Storefront() {
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: `${fontScale}rem`,
+                  fontSize: '1.03rem',
                   lineHeight: 1.7,
-                  color: bodyColor,
+                  color: '#292524',
                   whiteSpace: 'pre-line'
                 }}
               >
@@ -709,9 +736,9 @@ export default function Storefront() {
             style={{
               margin: '0.85rem 0 0.35rem 0',
               fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: `${fontScale * 1.03}rem`,
+              fontSize: '1.06rem',
               fontWeight: 700,
-              color: subheadingColor,
+              color: '#78350f',
               borderBottom: '1px solid rgba(120, 53, 15, 0.18)',
               paddingBottom: '0.2rem'
             }}
@@ -727,9 +754,9 @@ export default function Storefront() {
           style={{
             margin: '0 0 0.78rem 0',
             fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: `${fontScale}rem`,
+            fontSize: '1.03rem',
             lineHeight: 1.7,
-            color: bodyColor,
+            color: '#292524',
             whiteSpace: 'pre-line'
           }}
         >
@@ -740,9 +767,9 @@ export default function Storefront() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100vw', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Segoe UI, sans-serif', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       <Head>
-        <title>A Heritage of Gold — Storefront &amp; Reader</title>
+        <title>Luminous Songs & Bookstore - Dr. Peter Ngotho Njoroge</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
@@ -782,16 +809,15 @@ export default function Storefront() {
           z-index: 1120;
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 6px;
           flex-wrap: wrap;
           justify-content: flex-end;
           max-width: calc(100vw - 20px);
-          background: rgba(15, 23, 42, 0.82);
+          background: rgba(15, 23, 42, 0.78);
           backdrop-filter: blur(6px);
           padding: 5px 8px;
           border-radius: 10px;
           border: 1px solid rgba(255, 255, 255, 0.14);
-          transition: opacity 0.2s ease;
         }
 
         .book-page-surface {
@@ -799,6 +825,7 @@ export default function Storefront() {
           min-height: 0;
           width: 100vw;
           height: 100%;
+          max-width: none;
           margin: 0;
           background:
             radial-gradient(circle at top right, rgba(217, 172, 74, 0.12), transparent 45%),
@@ -806,17 +833,14 @@ export default function Storefront() {
           color: #292524;
           border-radius: 0;
           padding: 3.1rem 2rem 3.4rem 2rem;
+          box-shadow: none;
+          border: none;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
           transition: transform 0.13s ease, opacity 0.13s ease;
-        }
-
-        .book-page-night {
-          background: #0f172a !important;
-          color: #e2e8f0 !important;
         }
 
         .book-page-flipping {
@@ -838,12 +862,6 @@ export default function Storefront() {
           padding: 6px 10px;
           border-radius: 999px;
           border: 1px solid rgba(255, 255, 255, 0.16);
-          transition: opacity 0.2s ease;
-        }
-
-        .reader-controls-hidden {
-          opacity: 0;
-          pointer-events: none;
         }
 
         .reader-arrow-btn {
@@ -857,313 +875,535 @@ export default function Storefront() {
           font-size: 1rem;
           font-weight: bold;
           cursor: pointer;
+          transition: background-color 0.15s ease, transform 0.12s ease;
+        }
+
+        .reader-arrow-btn:active:not(:disabled) {
+          transform: scale(0.94);
         }
 
         @media (max-width: 768px) {
           .desktop-sidebar { display: none !important; }
           .mobile-header { display: flex !important; }
           .main-content { margin-left: 0 !important; padding: 1.5rem 1rem !important; }
-          .book-page-surface { padding: 3.5rem 1.05rem 3.8rem 1.05rem; }
+          .book-page-surface { padding: 3.4rem 1.05rem 3.8rem 1.05rem; }
           .reader-arrow-btn { width: 34px; height: 34px; font-size: 0.92rem; }
         }
       `}</style>
 
       {/* Mobile Top Header */}
       <header className="mobile-header" style={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: '#0f172a', borderBottom: '1px solid #1e293b', padding: '0.75rem 1rem', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#38bdf8' }}>Heritage of Gold</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '1.1rem', color: '#38bdf8' }}>
+          <span>📖</span> Dr. Ngotho
+        </div>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button onClick={() => setActiveCategory('home')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>Home</button>
-          <button onClick={() => setActiveCategory('books')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>Books</button>
-          <button onClick={() => setActiveCategory('music')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>Audio</button>
+          <button onClick={() => setActiveCategory('home')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>🏠</button>
+          <button onClick={() => setActiveCategory('books')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>📖</button>
+          <button onClick={() => setActiveCategory('music')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>🎛️</button>
           <button onClick={() => setActiveCategory('cart')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer', position: 'relative' }}>
-            Cart
+            🛒
             {cart.length > 0 && <span style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '1px 5px', fontSize: '0.65rem', fontWeight: 'bold' }}>{cart.length}</span>}
           </button>
         </div>
       </header>
 
       {/* Desktop Sidebar */}
-      <aside className="desktop-sidebar" style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', flexDirection: 'column', alignItems: 'center', gap: '1rem', position: 'fixed', top: 0, left: 0, bottom: 0, height: '100vh', zIndex: 100 }}>
-        <button title="Home" onClick={() => setActiveCategory('home')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer' }}>H</button>
-        <button title="Books" onClick={() => setActiveCategory('books')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer' }}>B</button>
-        <button title="Music" onClick={() => setActiveCategory('music')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer' }}>A</button>
-        <button title="Cart" onClick={() => setActiveCategory('cart')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer', position: 'relative' }}>
-          C
+      <aside className="desktop-sidebar" style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', flexDirection: 'column', alignItems: 'center', gap: '1rem', flexShrink: 0, position: 'fixed', top: 0, left: 0, bottom: 0, height: '100vh', zIndex: 100 }}>
+        <div style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>📖</div>
+        <button title="Home & About Author" onClick={() => setActiveCategory('home')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer' }}>🏠</button>
+        <button title="Books Store" onClick={() => setActiveCategory('books')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer' }}>📖</button>
+        <button title="Music Catalog" onClick={() => setActiveCategory('music')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer' }}>🎛️</button>
+        <button title="Shopping Cart" onClick={() => setActiveCategory('cart')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer', position: 'relative' }}>
+          🛒
           {cart.length > 0 && <span style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.75rem', fontWeight: 'bold' }}>{cart.length}</span>}
         </button>
       </aside>
 
       {/* Main Content */}
       <main className="main-content" style={{ flex: 1, paddingBottom: '6rem' }}>
+
+        {/* HOME VIEW */}
         {activeCategory === 'home' && (
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <section
-              aria-label="Autobiography"
-              style={{
-                background: 'linear-gradient(180deg, #172033 0%, #1e293b 100%)',
-                border: '1px solid #334155',
-                borderRadius: '22px',
-                padding: '2.25rem 2rem',
-                boxShadow: '0 18px 40px rgba(0, 0, 0, 0.4)'
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '0.75rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.14em',
-                  color: '#38bdf8',
-                  fontWeight: 700,
-                  display: 'block',
-                  marginBottom: '0.35rem'
-                }}
-              >
-                Autobiography
-              </span>
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a, #1e1b4b)', border: '1px solid #334155', borderRadius: '24px', padding: '3.5rem 2rem', textAlign: 'center', marginBottom: '2.5rem' }}>
+              <span style={{ fontSize: '4rem' }}>🕊️</span>
+              <h1 style={{ fontSize: '2.8rem', margin: '1rem 0 0.5rem 0', fontWeight: '800', color: '#fff' }}>Luminous Songs & Bookstore</h1>
+              <p style={{ color: '#38bdf8', fontSize: '1.3rem', fontWeight: '600', margin: 0 }}>Extraordinary Literature & Compositions by Dr. Peter Ngotho Njoroge</p>
+            </div>
 
-              <h1 style={{ margin: '0 0 1.25rem 0', fontSize: '2rem', fontWeight: 800, color: '#fff' }}>
-                Dr. Peter Ngotho Njoroge
-              </h1>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '20px', padding: '2.5rem', marginBottom: '2.5rem' }}>
+              <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '1.5rem', borderBottom: '2px solid #2563eb', paddingBottom: '0.75rem' }}>📖 Meet the Author & Composer: Dr. Peter Ngotho Njoroge</h2>
 
-              <p style={{ color: '#f1f5f9', fontSize: '1.05rem', lineHeight: 1.8, marginBottom: '1rem' }}>
-                Author of <em>A Heritage of Gold: Unveiling the Treasure in Our Youth</em>, dedicated to guiding parents,
-                teachers, church leaders, and everyday mentors to uncover the potential and purpose in young people.
+              <p style={{ color: '#e2e8f0', fontSize: '1.1rem', lineHeight: '1.9', marginBottom: '1.25rem' }}>
+                Welcome to a sanctuary of faith, wisdom, and divine inspiration. I am <strong style={{ color: '#38bdf8' }}>Dr. Peter Ngotho Njoroge</strong>—an author, publisher, and music composer called to touch souls and uplift spirits through extraordinary literature and heavenly melodies.
               </p>
 
-              <p style={{ color: '#cbd5e1', fontSize: '1rem', lineHeight: 1.8, marginBottom: '1.75rem' }}>
-                Open the book reader to explore mentorship across families, schools, churches, and communities, or browse
-                audio tracks and add items to your cart.
+              <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.25rem' }}>
+                Born with a deep passion for spiritual growth and community mentorship, my journey has been dedicated to guiding the next generation and nurturing moral resilience. In an era marked by shifting cultural values and generational gaps, my literary works—such as <em style={{ color: '#38bdf8' }}>A Heritage of Gold</em>—serve as practical lifelines for parents, educators, and mentors seeking to build strong, faith-centered legacies.
               </p>
 
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('books')}
-                  style={{
-                    backgroundColor: '#2563eb',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '0.85rem 1.5rem',
-                    borderRadius: '10px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Browse Books
-                </button>
+              <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                Beyond writing, my heart resonates deeply with choral composition. Through uplifting hymns and spiritual audio collections, I strive to create devotional spaces where every believer can draw closer to God through song. Thank you for walking this journey of faith with me.
+              </p>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('music')}
-                  style={{
-                    backgroundColor: '#059669',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '0.85rem 1.5rem',
-                    borderRadius: '10px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Listen to Audio
-                </button>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2rem' }}>
+                <button onClick={() => setActiveCategory('books')} style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.9rem 1.75rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.05rem' }}>Browse Books 📚</button>
+                <button onClick={() => setActiveCategory('music')} style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.9rem 1.75rem', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.05rem' }}>Listen to Audio Songs 🎛️</button>
               </div>
-            </section>
+            </div>
           </div>
         )}
 
+        {/* BOOKS VIEW */}
         {activeCategory === 'books' && (
-          <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
-            {loading ? (
-              <p style={{ color: '#94a3b8' }}>Loading catalog...</p>
-            ) : (
-              books.map((book) => {
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Books</h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read free summaries and unlock full-screen page-by-page reading after payment.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
+              {books.map((book) => {
                 const unlocked = isBookUnlocked(book.id);
                 return (
                   <div key={book.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <h3 style={{ margin: '0 0 0.4rem 0' }}>{book.title}</h3>
-                      <p style={{ color: '#38bdf8', margin: '0 0 0.75rem 0', fontSize: '0.9rem' }}>{book.author}</p>
-                      <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{book.summary}</p>
+                      <div style={{ height: '140px', background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>📖</div>
+                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{book.title}</h3>
+                      <p style={{ color: '#38bdf8', margin: '0 0 0.75rem 0', fontSize: '0.9rem', fontWeight: '600' }}>By {book.author || 'Dr. Peter Ngotho Njoroge'}</p>
+                      <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{book.summary}</p>
                     </div>
-                    <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+
+                    <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ color: unlocked ? '#38bdf8' : '#34d399' }}>{unlocked ? 'Unlocked' : `KES ${book.price}`}</strong>
-                        <button onClick={() => openBookReader(book)} style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                          {unlocked ? 'Open' : 'Preview'}
+                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: unlocked ? '#38bdf8' : '#34d399' }}>
+                          {unlocked ? '🔓 Unlocked' : `KES ${book.price}`}
+                        </span>
+                        <button
+                          onClick={() => openBookReader(book)}
+                          style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
+                        >
+                          {unlocked ? '📖 Open Book' : '📖 Read Summary'}
                         </button>
                       </div>
                       {!unlocked && (
-                        <button onClick={() => addToCart(book)} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                        <button
+                          onClick={() => addToCart(book)}
+                          style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                        >
                           + Add to Cart (KES {book.price})
                         </button>
                       )}
                     </div>
                   </div>
                 );
-              })
-            )}
+              })}
+            </div>
           </div>
         )}
 
+        {/* MUSIC VIEW */}
         {activeCategory === 'music' && (
-          <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
-            {allSongs.map((track) => {
-              const unlocked = isSongUnlocked(track.id);
-              return (
-                <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
-                  <h3 style={{ margin: '0 0 0.4rem 0' }}>{track.title}</h3>
-                  <p style={{ color: '#818cf8', margin: '0 0 0.75rem 0', fontSize: '0.9rem' }}>{track.artist}</p>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{track.description}</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                    <strong style={{ color: unlocked ? '#38bdf8' : '#34d399' }}>{unlocked ? 'Unlocked' : `KES ${track.price}`}</strong>
-                    <button onClick={() => setSelectedSong(track)} style={{ backgroundColor: '#059669', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Play</button>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>💿 Music & Audio Catalog</h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Soul-stirring hymns and spiritual audio tracks by Dr. Peter Ngotho Njoroge.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
+              {allSongs.map((track) => {
+                const unlocked = isSongUnlocked(track.id);
+                return (
+                  <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ height: '140px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎵</div>
+                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
+                      <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Composer: {track.artist || 'Dr. Peter Ngotho Njoroge'}</p>
+                      <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{track.description}</p>
+                    </div>
+
+                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: unlocked ? '#38bdf8' : '#34d399' }}>
+                          {unlocked ? '🔓 Unlocked' : `KES ${track.price}`}
+                        </span>
+                        <button
+                          onClick={() => setSelectedSong(track)}
+                          style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
+                        >
+                          {unlocked ? '🎧 Listen Full' : '🎧 Preview Audio'}
+                        </button>
+                      </div>
+                      {!unlocked && (
+                        <button
+                          onClick={() => addToCart(track)}
+                          style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                        >
+                          + Add to Cart (KES {track.price})
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
+        {/* CART VIEW */}
         {activeCategory === 'cart' && (
-          <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
-            <h2 style={{ marginTop: 0 }}>Cart ({cart.length})</h2>
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.25rem' }}>🛒 Your Shopping Cart</h2>
             {cart.length === 0 ? (
-              <p style={{ color: '#94a3b8' }}>Your cart is empty.</p>
+              <div style={{ backgroundColor: '#1e293b', padding: '2.5rem', borderRadius: '16px', textAlign: 'center', border: '1px solid #334155' }}>
+                <p style={{ color: '#94a3b8', fontSize: '1.05rem', margin: 0 }}>Your cart is empty.</p>
+              </div>
             ) : (
-              <>
+              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.25rem' }}>
                 {cart.map((item) => (
-                  <div key={item.cartId} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid #334155' }}>
-                    <span>{item.title}</span>
+                  <div key={item.cartId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', borderBottom: '1px solid #334155' }}>
                     <div>
-                      <strong style={{ color: '#34d399', marginRight: '0.75rem' }}>KES {item.price}</strong>
-                      <button onClick={() => removeFromCart(item.cartId)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>Remove</button>
+                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1.05rem' }}>{item.title}</h4>
+                      <p style={{ margin: 0, color: '#38bdf8', fontSize: '0.8rem' }}>{item.author ? `Author: ${item.author}` : `Composer: ${item.artist}`}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontWeight: 'bold', color: '#34d399', fontSize: '0.95rem' }}>KES {item.price}</span>
+                      <button onClick={() => removeFromCart(item.cartId)} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '1.1rem', cursor: 'pointer' }}>🗑️</button>
                     </div>
                   </div>
                 ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', fontWeight: 'bold', fontSize: '1.15rem' }}>
-                  <span>Total:</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1.25rem', marginTop: '0.5rem', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                  <span>Total Amount:</span>
                   <span style={{ color: '#34d399' }}>KES {cartTotal}</span>
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}
       </main>
 
+      {/* FULL-SCREEN PAGE-FLIP BOOK READER */}
       {selectedBook && (
-        <div className="fullscreen-reader-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-          <div className={`reader-mini-bar ${controlsHidden ? 'reader-controls-hidden' : ''}`}>
+        <div
+          className="fullscreen-reader-shell"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Floating Compact Reader Controls */}
+          <div className="reader-mini-bar">
             {isBookUnlocked(selectedBook.id) && (
               <>
-                <button type="button" onClick={saveBookmarkForCurrentPage} style={{ backgroundColor: savedBookmarkPageIndex === currentPageIndex ? '#047857' : '#1e293b', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                  {bookmarkToast || `p.${currentPageIndex + 1}`}
+                <button
+                  type="button"
+                  onClick={saveBookmarkForCurrentPage}
+                  title="Bookmark current page"
+                  style={{
+                    backgroundColor: savedBookmarkPageIndex === currentPageIndex ? '#047857' : '#1e293b',
+                    color: '#fef3c7',
+                    border: '1px solid rgba(217, 172, 74, 0.4)',
+                    borderRadius: '7px',
+                    padding: '0.32rem 0.55rem',
+                    fontSize: '0.76rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {bookmarkToast || `🔖 p.${currentPageIndex + 1}`}
                 </button>
 
                 {savedBookmarkPageIndex !== null && (
                   <>
-                    <button type="button" onClick={() => flipToPage(savedBookmarkPageIndex)} style={{ backgroundColor: 'rgba(217,119,6,0.25)', color: '#fde68a', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                      Go p.{savedBookmarkPageIndex + 1}
+                    <button
+                      type="button"
+                      onClick={() => flipToPage(savedBookmarkPageIndex)}
+                      title={`Jump to bookmark on page ${savedBookmarkPageIndex + 1}`}
+                      style={{
+                        backgroundColor: 'rgba(217, 119, 6, 0.25)',
+                        color: '#fde68a',
+                        border: '1px solid rgba(217, 172, 74, 0.4)',
+                        borderRadius: '7px',
+                        padding: '0.32rem 0.55rem',
+                        fontSize: '0.76rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      ↳ p.{savedBookmarkPageIndex + 1}
                     </button>
-                    <button type="button" onClick={clearBookmarkForBook} title="Clear bookmark" style={{ backgroundColor: '#1e293b', color: '#fca5a5', border: '1px solid rgba(248,113,113,0.35)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                      Clear BM
+
+                    <button
+                      type="button"
+                      onClick={clearBookmarkForBook}
+                      title="Remove saved bookmark"
+                      style={{
+                        backgroundColor: '#1e293b',
+                        color: '#fca5a5',
+                        border: '1px solid rgba(248, 113, 113, 0.35)',
+                        borderRadius: '7px',
+                        padding: '0.32rem 0.45rem',
+                        fontSize: '0.76rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      ✕bm
                     </button>
                   </>
                 )}
 
-                <button type="button" onClick={() => setFontScale((s) => Math.max(0.85, Number((s - 0.1).toFixed(2))))} style={{ backgroundColor: '#1e293b', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>A-</button>
-                <button type="button" onClick={() => setFontScale((s) => Math.min(1.35, Number((s + 0.1).toFixed(2))))} style={{ backgroundColor: '#1e293b', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>A+</button>
-                <button type="button" onClick={() => setNightMode((n) => !n)} style={{ backgroundColor: '#1e293b', color: '#fde68a', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
-                  {nightMode ? 'Day' : 'Night'}
-                </button>
-
                 {chapterJumpOptions.length > 0 && (
-                  <select aria-label="Jump to chapter" value={activeChapterPageIndex} onChange={(e) => flipToPage(Number(e.target.value))} style={{ backgroundColor: '#0f172a', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.76rem', maxWidth: '150px', cursor: 'pointer' }}>
+                  <select
+                    id="chapter-jump-select"
+                    aria-label="Jump to chapter or section"
+                    value={activeChapterPageIndex}
+                    onChange={(e) => flipToPage(Number(e.target.value))}
+                    style={{
+                      backgroundColor: '#0f172a',
+                      color: '#fef3c7',
+                      border: '1px solid rgba(217, 172, 74, 0.4)',
+                      borderRadius: '7px',
+                      padding: '0.32rem 0.5rem',
+                      fontSize: '0.78rem',
+                      maxWidth: '165px',
+                      cursor: 'pointer'
+                    }}
+                  >
                     {chapterJumpOptions.map((opt) => (
-                      <option key={`${opt.label}-${opt.pageIndex}`} value={opt.pageIndex}>{opt.label} (p.{opt.pageIndex + 1})</option>
+                      <option key={`${opt.label}-${opt.pageIndex}`} value={opt.pageIndex}>
+                        {opt.label} (p.{opt.pageIndex + 1})
+                      </option>
                     ))}
                   </select>
                 )}
-
-                <form onSubmit={handleDirectPageJump} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <input type="number" min={1} max={bookPages.length || 1} value={jumpPageInput} onChange={(e) => setJumpPageInput(e.target.value)} placeholder={`1-${bookPages.length || 1}`} aria-label="Page number" style={{ width: '52px', backgroundColor: '#0f172a', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.28rem 0.35rem', fontSize: '0.75rem' }} />
-                  <button type="submit" style={{ backgroundColor: '#b45309', color: '#fff', border: 'none', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.73rem', fontWeight: 700, cursor: 'pointer' }}>Go</button>
-                </form>
               </>
             )}
 
-            <button type="button" onClick={() => setSelectedBook(null)} title="Close" style={{ backgroundColor: '#334155', color: '#fff', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '7px', padding: '0.3rem 0.55rem', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.78rem' }}>X</button>
+            <button
+              type="button"
+              onClick={() => setSelectedBook(null)}
+              title="Close reader"
+              style={{
+                backgroundColor: '#334155',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.14)',
+                borderRadius: '7px',
+                padding: '0.32rem 0.6rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                lineHeight: 1.2
+              }}
+            >
+              ✕
+            </button>
           </div>
 
+          {/* Reader Content Area */}
           {!isBookUnlocked(selectedBook.id) ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: '820px', margin: '0 auto', padding: '3.5rem 1.25rem 2rem 1.25rem', gap: '1.25rem' }}>
+            <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: '860px', margin: '0 auto', padding: '3.5rem 1.25rem 2rem 1.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', overflowY: 'auto' }}>
               <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '14px', border: '1px solid #334155' }}>
-                <p style={{ color: '#cbd5e1', lineHeight: 1.75, margin: 0 }}>{selectedBook.summary}</p>
+                <h4 style={{ margin: '0 0 0.6rem 0', color: '#38bdf8', fontSize: '1.1rem' }}>Book Summary</h4>
+                <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: 0, fontSize: '1.05rem' }}>{selectedBook.summary}</p>
               </div>
-              <button onClick={() => { setSelectedBook(null); addToCart(selectedBook); setCheckoutOpen(true); }} style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', alignSelf: 'center' }}>
-                Unlock Full Book (KES {selectedBook.price})
-              </button>
+
+              <div style={{ textAlign: 'center', padding: '1.75rem', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '14px', border: '1px dashed #fbbf24' }}>
+                <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>Want full-screen page-by-page access to the entire book?</p>
+                <button
+                  onClick={() => {
+                    setSelectedBook(null);
+                    addToCart(selectedBook);
+                    setCheckoutOpen(true);
+                  }}
+                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.85rem 1.65rem', borderRadius: '10px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
+                >
+                  Pay & Unlock Full Book (KES {selectedBook.price}) 💳
+                </button>
+              </div>
             </div>
           ) : (
             <>
               <div
                 ref={pageSurfaceRef}
-                onScroll={handlePageScroll}
-                onClick={() => setControlsHidden((prev) => !prev)}
-                className={`book-page-surface ${nightMode ? 'book-page-night' : ''} ${pageFlipAnim ? 'book-page-flipping' : ''}`}
+                className={`book-page-surface ${pageFlipAnim ? 'book-page-flipping' : ''}`}
               >
                 <div>{renderBookPageBlocks(bookPages[currentPageIndex] || [])}</div>
-                <div style={{ paddingTop: '0.5rem', marginTop: '0.75rem', borderTop: '1px solid rgba(146,64,14,0.16)', textAlign: 'center', fontSize: '0.8rem', color: nightMode ? '#cbd5e1' : '#78350f', fontWeight: 600 }}>
+
+                <div
+                  style={{
+                    paddingTop: '0.5rem',
+                    marginTop: '0.75rem',
+                    borderTop: '1px solid rgba(146, 64, 14, 0.16)',
+                    textAlign: 'center',
+                    fontSize: '0.8rem',
+                    color: '#78350f',
+                    fontWeight: 600
+                  }}
+                >
                   {currentPageIndex + 1} / {bookPages.length}
                 </div>
               </div>
 
-              <div className={`reader-arrow-nav ${controlsHidden ? 'reader-controls-hidden' : ''}`}>
-                <button type="button" aria-label="Previous page" onClick={() => flipToPage(currentPageIndex - 1)} disabled={currentPageIndex === 0} className="reader-arrow-btn" style={{ backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309', color: currentPageIndex === 0 ? '#64748b' : '#fff', cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer' }}>Prev</button>
-                <button type="button" aria-label="Next page" onClick={() => flipToPage(currentPageIndex + 1)} disabled={currentPageIndex >= bookPages.length - 1} className="reader-arrow-btn" style={{ backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706', color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16', cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer' }}>Next</button>
+              {/* Compact Arrow-Only Prev / Next Controls */}
+              <div className="reader-arrow-nav">
+                <button
+                  type="button"
+                  aria-label="Previous page"
+                  onClick={() => flipToPage(currentPageIndex - 1)}
+                  disabled={currentPageIndex === 0}
+                  className="reader-arrow-btn"
+                  style={{
+                    backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309',
+                    color: currentPageIndex === 0 ? '#64748b' : '#fff',
+                    cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  ←
+                </button>
+
+                <button
+                  type="button"
+                  aria-label="Next page"
+                  onClick={() => flipToPage(currentPageIndex + 1)}
+                  disabled={currentPageIndex >= bookPages.length - 1}
+                  className="reader-arrow-btn"
+                  style={{
+                    backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706',
+                    color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16',
+                    cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  →
+                </button>
               </div>
             </>
           )}
         </div>
       )}
 
+      {/* MUSIC PLAYER / PREVIEW MODAL */}
       {selectedSong && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '480px' }}>
-            <h3 style={{ marginTop: 0 }}>{selectedSong.title}</h3>
-            <p style={{ color: '#cbd5e1' }}>{selectedSong.description}</p>
-            <audio controls style={{ width: '100%', marginBottom: '1rem' }}>
-              <source src={isSongUnlocked(selectedSong.id) ? selectedSong.fullAudio : selectedSong.previewAudio} type="audio/mpeg" />
-            </audio>
-            <button onClick={() => setSelectedSong(null)} style={{ width: '100%', padding: '0.7rem', backgroundColor: '#334155', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Close</button>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(5px)', padding: '1rem' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem' }}>
+              <div>
+                <span style={{ fontSize: '0.75rem', color: isSongUnlocked(selectedSong.id) ? '#34d399' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>
+                  {isSongUnlocked(selectedSong.id) ? '🔓 Full Audio Unlocked' : '🎧 Audio Preview'}
+                </span>
+                <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.3rem', color: '#fff' }}>{selectedSong.title}</h3>
+              </div>
+              <button onClick={() => setSelectedSong(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.6rem', cursor: 'pointer' }}>&times;</button>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p style={{ color: '#cbd5e1', fontSize: '0.95rem', marginBottom: '1rem' }}>{selectedSong.description}</p>
+
+              {!isSongUnlocked(selectedSong.id) ? (
+                <div>
+                  <div style={{ backgroundColor: '#0f172a', padding: '1rem', borderRadius: '12px', border: '1px solid #334155', marginBottom: '1rem', textAlign: 'center' }}>
+                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Sample Preview:</p>
+                    <audio controls style={{ width: '100%' }}>
+                      <source src={selectedSong.previewAudio || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+
+                  <div style={{ textAlign: 'center', padding: '1.25rem', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', border: '1px dashed #38bdf8' }}>
+                    <p style={{ color: '#cbd5e1', margin: '0 0 1rem 0', fontSize: '0.9rem' }}>Want full streaming & downloadable MP3/WAV access?</p>
+                    <button
+                      onClick={() => {
+                        setSelectedSong(null);
+                        addToCart(selectedSong);
+                        setCheckoutOpen(true);
+                      }}
+                      style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.95rem', cursor: 'pointer' }}
+                    >
+                      Buy Full Track for KES {selectedSong.price} 💳
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '12px', border: '1px solid #34d399', textAlign: 'center' }}>
+                  <p style={{ color: '#34d399', fontWeight: 'bold', margin: '0 0 1rem 0' }}>✅ Purchase Confirmed! Listen Below:</p>
+                  <audio controls style={{ width: '100%', marginBottom: '1rem' }}>
+                    <source src={selectedSong.fullAudio || selectedSong.previewAudio} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              )}
+            </div>
+
+            <button onClick={() => setSelectedSong(null)} style={{ padding: '0.75rem', backgroundColor: '#334155', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+              Close Player
+            </button>
           </div>
         </div>
       )}
 
+      {/* Floating Checkout Button */}
       {cart.length > 0 && (
-        <button onClick={() => setCheckoutOpen(true)} style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#059669', color: '#fff', padding: '0.85rem 1.4rem', borderRadius: '50px', border: 'none', fontWeight: 'bold', cursor: 'pointer', zIndex: 900 }}>
-          Checkout (KES {cartTotal})
+        <button
+          onClick={() => setCheckoutOpen(true)}
+          style={{
+            position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#059669', color: '#ffffff',
+            padding: '0.85rem 1.5rem', borderRadius: '50px', border: 'none', fontWeight: 'bold', fontSize: '1rem',
+            cursor: 'pointer', boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.5)', zIndex: 900,
+            display: 'flex', alignItems: 'center', gap: '8px'
+          }}
+        >
+          <span>Checkout via M-Pesa (KES {cartTotal})</span> 💳
         </button>
       )}
 
+      {/* M-Pesa Checkout Modal */}
       {checkoutOpen && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, backdropFilter: 'blur(5px)', padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '420px' }}>
             {!paymentSuccess ? (
-              <form onSubmit={handleMpesaCheckout}>
-                <h3 style={{ marginTop: 0 }}>M-Pesa Checkout</h3>
-                <p style={{ color: '#34d399', fontWeight: 'bold' }}>Total: KES {cartTotal}</p>
-                <p style={{ color: '#38bdf8', fontSize: '0.9rem' }}>Send to: {mpesaReceiveNumber}</p>
-                <input type="tel" placeholder="0712345678" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', marginBottom: '1rem' }} />
-                <button type="submit" disabled={paying} style={{ width: '100%', padding: '0.8rem', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  {paying ? 'Processing...' : `Confirm KES ${cartTotal}`}
-                </button>
-                <button type="button" onClick={closeModal} style={{ width: '100%', marginTop: '0.5rem', padding: '0.65rem', backgroundColor: '#334155', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-              </form>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem' }}>📲 M-Pesa Send Money Checkout</h3>
+                  <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+                </div>
+
+                <div style={{ backgroundColor: '#0f172a', padding: '0.85rem', borderRadius: '10px', marginBottom: '1.0rem' }}>
+                  <p style={{ margin: '0 0 0.25rem 0', color: '#94a3b8', fontSize: '0.85rem' }}>Items in Cart: {cart.length}</p>
+                  <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: 'bold' }}>Total Due: KES {cartTotal}</p>
+                </div>
+
+                <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '0.85rem', borderRadius: '10px', marginBottom: '1.25rem' }}>
+                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Money To (Dr. Peter Ngotho Njoroge):</p>
+                  <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
+                </div>
+
+                <form onSubmit={handleMpesaCheckout}>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your M-Pesa Phone Number (For Confirmation)</label>
+                  <input
+                    type="tel"
+                    placeholder="0712345678"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', marginBottom: '1.25rem' }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={paying}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
+                  >
+                    {paying ? 'Processing Order...' : `Confirm KES ${cartTotal} Sent`}
+                  </button>
+                </form>
+              </div>
             ) : (
-              <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#34d399' }}>Unlocked!</h3>
-                <button onClick={closeModal} style={{ padding: '0.7rem 1.4rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Done</button>
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
+                <h3 style={{ fontSize: '1.3rem', color: '#34d399', margin: '0 0 0.5rem 0' }}>Order Confirmed!</h3>
+                <p style={{ color: '#94a3b8', marginBottom: '1.25rem' }}>Thank you! Your full book and audio access has been unlocked. Open the book to start flipping through the pages.</p>
+                <button onClick={closeModal} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  Done
+                </button>
               </div>
             )}
           </div>
