@@ -870,13 +870,13 @@ export default function Storefront() {
 
       {/* Mobile Top Header */}
       <header className="mobile-header" style={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: '#0f172a', borderBottom: '1px solid #1e293b', padding: '0.75rem 1rem', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#38bdf8' }}>📖 Heritage of Gold</div>
+        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#38bdf8' }}>Heritage of Gold</div>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button onClick={() => setActiveCategory('home')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>🏠</button>
-          <button onClick={() => setActiveCategory('books')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>📖</button>
-          <button onClick={() => setActiveCategory('music')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>🎛️</button>
+          <button onClick={() => setActiveCategory('home')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>Home</button>
+          <button onClick={() => setActiveCategory('books')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>Books</button>
+          <button onClick={() => setActiveCategory('music')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer' }}>Audio</button>
           <button onClick={() => setActiveCategory('cart')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : '#1e293b', color: '#fff', cursor: 'pointer', position: 'relative' }}>
-            🛒
+            Cart
             {cart.length > 0 && <span style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '1px 5px', fontSize: '0.65rem', fontWeight: 'bold' }}>{cart.length}</span>}
           </button>
         </div>
@@ -884,11 +884,11 @@ export default function Storefront() {
 
       {/* Desktop Sidebar */}
       <aside className="desktop-sidebar" style={{ width: '70px', backgroundColor: '#0f172a', borderRight: '1px solid #1e293b', padding: '1.5rem 0', flexDirection: 'column', alignItems: 'center', gap: '1rem', position: 'fixed', top: 0, left: 0, bottom: 0, height: '100vh', zIndex: 100 }}>
-        <button title="Home" onClick={() => setActiveCategory('home')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer' }}>🏠</button>
-        <button title="Books" onClick={() => setActiveCategory('books')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer' }}>📖</button>
-        <button title="Music" onClick={() => setActiveCategory('music')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer' }}>🎛️</button>
-        <button title="Cart" onClick={() => setActiveCategory('cart')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.4rem', cursor: 'pointer', position: 'relative' }}>
-          🛒
+        <button title="Home" onClick={() => setActiveCategory('home')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'home' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer' }}>H</button>
+        <button title="Books" onClick={() => setActiveCategory('books')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'books' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer' }}>B</button>
+        <button title="Music" onClick={() => setActiveCategory('music')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'music' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer' }}>A</button>
+        <button title="Cart" onClick={() => setActiveCategory('cart')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'cart' ? '#2563eb' : 'transparent', color: '#fff', fontSize: '1.1rem', cursor: 'pointer', position: 'relative' }}>
+          C
           {cart.length > 0 && <span style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.75rem', fontWeight: 'bold' }}>{cart.length}</span>}
         </button>
       </aside>
@@ -907,57 +907,23 @@ export default function Storefront() {
                 boxShadow: '0 18px 40px rgba(0, 0, 0, 0.4)'
               }}
             >
-              <div
+              <span
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  marginBottom: '1.75rem'
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.14em',
+                  color: '#38bdf8',
+                  fontWeight: 700,
+                  display: 'block',
+                  marginBottom: '0.35rem'
                 }}
               >
-                <div
-                  style={{
-                    width: '180px',
-                    height: '220px',
-                    borderRadius: '18px',
-                    overflow: 'hidden',
-                    border: '2px solid rgba(56, 189, 248, 0.45)',
-                    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.45)',
-                    backgroundColor: '#0f172a',
-                    marginBottom: '0.9rem'
-                  }}
-                >
-                  <img
-                    src="/images/author-bg.jpeg"
-                    alt="Dr. Peter Ngotho Njoroge"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: '50% 15%',
-                      display: 'block'
-                    }}
-                  />
-                </div>
+                Autobiography
+              </span>
 
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.14em',
-                    color: '#38bdf8',
-                    fontWeight: 700,
-                    marginBottom: '0.35rem'
-                  }}
-                >
-                  Autobiography
-                </span>
-
-                <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: '#fff' }}>
-                  Dr. Peter Ngotho Njoroge
-                </h1>
-              </div>
+              <h1 style={{ margin: '0 0 1.25rem 0', fontSize: '2rem', fontWeight: 800, color: '#fff' }}>
+                Dr. Peter Ngotho Njoroge
+              </h1>
 
               <p style={{ color: '#f1f5f9', fontSize: '1.05rem', lineHeight: 1.8, marginBottom: '1rem' }}>
                 Author of <em>A Heritage of Gold: Unveiling the Treasure in Our Youth</em>, dedicated to guiding parents,
@@ -1022,9 +988,9 @@ export default function Storefront() {
                     </div>
                     <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ color: unlocked ? '#38bdf8' : '#34d399' }}>{unlocked ? '🔓 Unlocked' : `KES ${book.price}`}</strong>
+                        <strong style={{ color: unlocked ? '#38bdf8' : '#34d399' }}>{unlocked ? 'Unlocked' : `KES ${book.price}`}</strong>
                         <button onClick={() => openBookReader(book)} style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                          {unlocked ? '📖 Open' : '📖 Preview'}
+                          {unlocked ? 'Open' : 'Preview'}
                         </button>
                       </div>
                       {!unlocked && (
@@ -1050,8 +1016,8 @@ export default function Storefront() {
                   <p style={{ color: '#818cf8', margin: '0 0 0.75rem 0', fontSize: '0.9rem' }}>{track.artist}</p>
                   <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{track.description}</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                    <strong style={{ color: unlocked ? '#38bdf8' : '#34d399' }}>{unlocked ? '🔓 Unlocked' : `KES ${track.price}`}</strong>
-                    <button onClick={() => setSelectedSong(track)} style={{ backgroundColor: '#059669', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>🎧 Play</button>
+                    <strong style={{ color: unlocked ? '#38bdf8' : '#34d399' }}>{unlocked ? 'Unlocked' : `KES ${track.price}`}</strong>
+                    <button onClick={() => setSelectedSong(track)} style={{ backgroundColor: '#059669', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Play</button>
                   </div>
                 </div>
               );
@@ -1061,7 +1027,7 @@ export default function Storefront() {
 
         {activeCategory === 'cart' && (
           <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
-            <h2 style={{ marginTop: 0 }}>🛒 Cart ({cart.length})</h2>
+            <h2 style={{ marginTop: 0 }}>Cart ({cart.length})</h2>
             {cart.length === 0 ? (
               <p style={{ color: '#94a3b8' }}>Your cart is empty.</p>
             ) : (
@@ -1071,7 +1037,7 @@ export default function Storefront() {
                     <span>{item.title}</span>
                     <div>
                       <strong style={{ color: '#34d399', marginRight: '0.75rem' }}>KES {item.price}</strong>
-                      <button onClick={() => removeFromCart(item.cartId)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>🗑️</button>
+                      <button onClick={() => removeFromCart(item.cartId)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>Remove</button>
                     </div>
                   </div>
                 ))}
@@ -1091,16 +1057,16 @@ export default function Storefront() {
             {isBookUnlocked(selectedBook.id) && (
               <>
                 <button type="button" onClick={saveBookmarkForCurrentPage} style={{ backgroundColor: savedBookmarkPageIndex === currentPageIndex ? '#047857' : '#1e293b', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                  {bookmarkToast || `🔖 p.${currentPageIndex + 1}`}
+                  {bookmarkToast || `p.${currentPageIndex + 1}`}
                 </button>
 
                 {savedBookmarkPageIndex !== null && (
                   <>
                     <button type="button" onClick={() => flipToPage(savedBookmarkPageIndex)} style={{ backgroundColor: 'rgba(217,119,6,0.25)', color: '#fde68a', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                      ↳ p.{savedBookmarkPageIndex + 1}
+                      Go p.{savedBookmarkPageIndex + 1}
                     </button>
                     <button type="button" onClick={clearBookmarkForBook} title="Clear bookmark" style={{ backgroundColor: '#1e293b', color: '#fca5a5', border: '1px solid rgba(248,113,113,0.35)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                      ✕bm
+                      Clear BM
                     </button>
                   </>
                 )}
@@ -1108,7 +1074,7 @@ export default function Storefront() {
                 <button type="button" onClick={() => setFontScale((s) => Math.max(0.85, Number((s - 0.1).toFixed(2))))} style={{ backgroundColor: '#1e293b', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>A-</button>
                 <button type="button" onClick={() => setFontScale((s) => Math.min(1.35, Number((s + 0.1).toFixed(2))))} style={{ backgroundColor: '#1e293b', color: '#fef3c7', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.45rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>A+</button>
                 <button type="button" onClick={() => setNightMode((n) => !n)} style={{ backgroundColor: '#1e293b', color: '#fde68a', border: '1px solid rgba(217,172,74,0.4)', borderRadius: '7px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
-                  {nightMode ? '☀️' : '🌙'}
+                  {nightMode ? 'Day' : 'Night'}
                 </button>
 
                 {chapterJumpOptions.length > 0 && (
@@ -1126,7 +1092,7 @@ export default function Storefront() {
               </>
             )}
 
-            <button type="button" onClick={() => setSelectedBook(null)} title="Close" style={{ backgroundColor: '#334155', color: '#fff', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '7px', padding: '0.3rem 0.55rem', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.78rem' }}>✕</button>
+            <button type="button" onClick={() => setSelectedBook(null)} title="Close" style={{ backgroundColor: '#334155', color: '#fff', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '7px', padding: '0.3rem 0.55rem', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.78rem' }}>X</button>
           </div>
 
           {!isBookUnlocked(selectedBook.id) ? (
@@ -1135,7 +1101,7 @@ export default function Storefront() {
                 <p style={{ color: '#cbd5e1', lineHeight: 1.75, margin: 0 }}>{selectedBook.summary}</p>
               </div>
               <button onClick={() => { setSelectedBook(null); addToCart(selectedBook); setCheckoutOpen(true); }} style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', alignSelf: 'center' }}>
-                Unlock Full Book (KES {selectedBook.price}) 💳
+                Unlock Full Book (KES {selectedBook.price})
               </button>
             </div>
           ) : (
@@ -1153,8 +1119,8 @@ export default function Storefront() {
               </div>
 
               <div className={`reader-arrow-nav ${controlsHidden ? 'reader-controls-hidden' : ''}`}>
-                <button type="button" aria-label="Previous page" onClick={() => flipToPage(currentPageIndex - 1)} disabled={currentPageIndex === 0} className="reader-arrow-btn" style={{ backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309', color: currentPageIndex === 0 ? '#64748b' : '#fff', cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer' }}>←</button>
-                <button type="button" aria-label="Next page" onClick={() => flipToPage(currentPageIndex + 1)} disabled={currentPageIndex >= bookPages.length - 1} className="reader-arrow-btn" style={{ backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706', color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16', cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer' }}>→</button>
+                <button type="button" aria-label="Previous page" onClick={() => flipToPage(currentPageIndex - 1)} disabled={currentPageIndex === 0} className="reader-arrow-btn" style={{ backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309', color: currentPageIndex === 0 ? '#64748b' : '#fff', cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer' }}>Prev</button>
+                <button type="button" aria-label="Next page" onClick={() => flipToPage(currentPageIndex + 1)} disabled={currentPageIndex >= bookPages.length - 1} className="reader-arrow-btn" style={{ backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706', color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16', cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer' }}>Next</button>
               </div>
             </>
           )}
@@ -1176,7 +1142,7 @@ export default function Storefront() {
 
       {cart.length > 0 && (
         <button onClick={() => setCheckoutOpen(true)} style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#059669', color: '#fff', padding: '0.85rem 1.4rem', borderRadius: '50px', border: 'none', fontWeight: 'bold', cursor: 'pointer', zIndex: 900 }}>
-          Checkout (KES {cartTotal}) 💳
+          Checkout (KES {cartTotal})
         </button>
       )}
 
@@ -1185,7 +1151,7 @@ export default function Storefront() {
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '420px' }}>
             {!paymentSuccess ? (
               <form onSubmit={handleMpesaCheckout}>
-                <h3 style={{ marginTop: 0 }}>📲 M-Pesa Checkout</h3>
+                <h3 style={{ marginTop: 0 }}>M-Pesa Checkout</h3>
                 <p style={{ color: '#34d399', fontWeight: 'bold' }}>Total: KES {cartTotal}</p>
                 <p style={{ color: '#38bdf8', fontSize: '0.9rem' }}>Send to: {mpesaReceiveNumber}</p>
                 <input type="tel" placeholder="0712345678" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', marginBottom: '1rem' }} />
@@ -1196,7 +1162,7 @@ export default function Storefront() {
               </form>
             ) : (
               <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#34d399' }}>✅ Unlocked!</h3>
+                <h3 style={{ color: '#34d399' }}>Unlocked!</h3>
                 <button onClick={closeModal} style={{ padding: '0.7rem 1.4rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Done</button>
               </div>
             )}
