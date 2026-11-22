@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Head from 'next/head';
 
 const FULL_HERITAGE_OF_GOLD_TEXT = `A HERITAGE OF GOLD: UNVEILING THE TREASURE IN OUR YOUTH
@@ -306,7 +306,7 @@ For the glory of your name. Amen.
 BIBLIOGRAPHY
 Includes references from the Holy Bible, Church documents and papal/saint quotes, books and referenced authors, and additional sources.`;
 
-function paginateBookText(rawText, charsPerPage = 950) {
+function paginateBookText(rawText, charsPerPage = 720) {
   if (!rawText || !rawText.trim()) return [];
   const paragraphs = rawText
     .split(/\n\s*\n/)
@@ -323,7 +323,7 @@ function paginateBookText(rawText, charsPerPage = 950) {
         para.split('\n')[0]
       );
 
-    if (isHeading && currentBlocks.length > 0 && currentLen > 220) {
+    if (isHeading && currentBlocks.length > 0 && currentLen > 140) {
       pages.push(currentBlocks);
       currentBlocks = [para];
       currentLen = para.length;
@@ -367,6 +367,7 @@ export default function Storefront() {
   const [selectedBook, setSelectedBook] = useState(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pageFlipAnim, setPageFlipAnim] = useState(false);
+  const touchStartXRef = useRef(null);
 
   // Music Player Modal State
   const [selectedSong, setSelectedSong] = useState(null);
@@ -428,7 +429,7 @@ export default function Storefront() {
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
-    return paginateBookText(selectedBook.fullText || selectedBook.summary || '', 950);
+    return paginateBookText(selectedBook.fullText || selectedBook.summary || '', 720);
   }, [selectedBook]);
 
   const openBookReader = (book) => {
@@ -442,7 +443,7 @@ export default function Storefront() {
     setTimeout(() => {
       setCurrentPageIndex(nextIdx);
       setPageFlipAnim(false);
-    }, 140);
+    }, 130);
   };
 
   useEffect(() => {
@@ -450,10 +451,30 @@ export default function Storefront() {
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowRight') flipToPage(currentPageIndex + 1);
       if (e.key === 'ArrowLeft') flipToPage(currentPageIndex - 1);
+      if (e.key === 'Escape') setSelectedBook(null);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedBook, currentPageIndex, bookPages.length]);
+
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartXRef.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartXRef.current === null || !e.changedTouches || e.changedTouches.length === 0) return;
+    const diffX = touchStartXRef.current - e.changedTouches[0].clientX;
+    touchStartXRef.current = null;
+    if (Math.abs(diffX) > 45) {
+      if (diffX > 0) {
+        flipToPage(currentPageIndex + 1);
+      } else {
+        flipToPage(currentPageIndex - 1);
+      }
+    }
+  };
 
   const addToCart = (item) => {
     setCart([...cart, { ...item, cartId: Date.now() + Math.random() }]);
@@ -549,24 +570,24 @@ export default function Storefront() {
       if (isMajorHeading) {
         const restLines = lines.slice(1).join('\n');
         return (
-          <div key={idx} style={{ marginBottom: '1.25rem' }}>
+          <div key={idx} style={{ marginBottom: '1rem' }}>
             <div
               style={{
-                background: 'linear-gradient(90deg, rgba(180, 130, 35, 0.16), rgba(180, 130, 35, 0.03))',
+                background: 'linear-gradient(90deg, rgba(180, 130, 35, 0.18), rgba(180, 130, 35, 0.03))',
                 borderLeft: '4px solid #b45309',
-                padding: '0.7rem 1rem',
+                padding: '0.65rem 1rem',
                 borderRadius: '0 10px 10px 0',
-                marginBottom: restLines ? '0.85rem' : 0
+                marginBottom: restLines ? '0.75rem' : 0
               }}
             >
               <div
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.68rem',
                   letterSpacing: '0.16em',
                   textTransform: 'uppercase',
                   color: '#92400e',
                   fontWeight: 700,
-                  marginBottom: '0.2rem'
+                  marginBottom: '0.18rem'
                 }}
               >
                 ✦ Luminous Edition ✦
@@ -575,8 +596,8 @@ export default function Storefront() {
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '1.22rem',
-                  lineHeight: 1.35,
+                  fontSize: '1.25rem',
+                  lineHeight: 1.32,
                   color: '#1e1b18',
                   letterSpacing: '0.03em'
                 }}
@@ -589,8 +610,8 @@ export default function Storefront() {
                 style={{
                   margin: 0,
                   fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '1.04rem',
-                  lineHeight: 1.82,
+                  fontSize: '1.05rem',
+                  lineHeight: 1.72,
                   color: '#292524',
                   whiteSpace: 'pre-line'
                 }}
@@ -614,13 +635,13 @@ export default function Storefront() {
           <h5
             key={idx}
             style={{
-              margin: '1.1rem 0 0.5rem 0',
+              margin: '0.9rem 0 0.4rem 0',
               fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: '1.06rem',
+              fontSize: '1.08rem',
               fontWeight: 700,
               color: '#78350f',
               borderBottom: '1px solid rgba(120, 53, 15, 0.18)',
-              paddingBottom: '0.25rem'
+              paddingBottom: '0.2rem'
             }}
           >
             {block}
@@ -632,10 +653,10 @@ export default function Storefront() {
         <p
           key={idx}
           style={{
-            margin: '0 0 0.9rem 0',
+            margin: '0 0 0.8rem 0',
             fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '1.03rem',
-            lineHeight: 1.8,
+            fontSize: '1.05rem',
+            lineHeight: 1.72,
             color: '#292524',
             whiteSpace: 'pre-line'
           }}
@@ -668,30 +689,52 @@ export default function Storefront() {
         .mobile-header { display: none; }
         .main-content { margin-left: 70px; padding: 2rem 1.5rem; }
 
+        .fullscreen-reader-shell {
+          position: fixed;
+          inset: 0;
+          width: 100vw;
+          height: 100dvh;
+          z-index: 1100;
+          background: linear-gradient(160deg, #1b150c 0%, #0f172a 55%, #17120a 100%);
+          display: flex;
+          flex-direction: column;
+          padding: 0.9rem 1.25rem;
+          overflow: hidden;
+        }
+
         .book-page-surface {
+          flex: 1;
+          width: 100%;
+          max-width: 1080px;
+          margin: 0 auto;
           background:
-            radial-gradient(circle at top right, rgba(217, 172, 74, 0.12), transparent 45%),
-            linear-gradient(to right, rgba(120, 83, 28, 0.08) 0%, rgba(253, 250, 242, 0.98) 4%, #fdfaf2 96%, rgba(120, 83, 28, 0.08) 100%);
+            radial-gradient(circle at top right, rgba(217, 172, 74, 0.14), transparent 45%),
+            linear-gradient(to right, rgba(120, 83, 28, 0.09) 0%, rgba(253, 250, 242, 0.99) 3.5%, #fdfaf2 96.5%, rgba(120, 83, 28, 0.09) 100%);
           color: #292524;
-          border-radius: 14px;
-          padding: 1.6rem 1.5rem;
+          border-radius: 16px;
+          padding: 1.5rem 2rem;
           box-shadow:
-            inset 6px 0 12px -6px rgba(92, 64, 24, 0.22),
-            0 12px 28px rgba(0, 0, 0, 0.35);
+            inset 8px 0 14px -6px rgba(92, 64, 24, 0.24),
+            0 16px 38px rgba(0, 0, 0, 0.45);
           border: 1px solid #e7dcc4;
-          transition: transform 0.14s ease, opacity 0.14s ease;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          overflow: hidden;
+          transition: transform 0.13s ease, opacity 0.13s ease;
         }
 
         .book-page-flipping {
-          opacity: 0.25;
-          transform: translateX(10px) scale(0.992);
+          opacity: 0.22;
+          transform: translateX(12px) scale(0.992);
         }
 
         @media (max-width: 768px) {
           .desktop-sidebar { display: none !important; }
           .mobile-header { display: flex !important; }
           .main-content { margin-left: 0 !important; padding: 1.5rem 1rem !important; }
-          .book-page-surface { padding: 1.25rem 1rem; }
+          .fullscreen-reader-shell { padding: 0.65rem 0.75rem; }
+          .book-page-surface { padding: 1.15rem 1.1rem; border-radius: 12px; }
         }
       `}</style>
 
@@ -763,7 +806,7 @@ export default function Storefront() {
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read free summaries and unlock page-by-page full book reading after payment.</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read free summaries and unlock full-screen page-by-page reading after payment.</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
@@ -886,159 +929,172 @@ export default function Storefront() {
         )}
       </main>
 
-      {/* FANCY PAGE-FLIP BOOK READER MODAL */}
+      {/* FULL-SCREEN PAGE-FLIP BOOK READER */}
       {selectedBook && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(4, 7, 15, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(6px)', padding: '0.85rem' }}>
+        <div
+          className="fullscreen-reader-shell"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Top Bar */}
           <div
             style={{
-              background: 'linear-gradient(160deg, #1b150c 0%, #0f172a 55%, #17120a 100%)',
-              border: '1px solid rgba(217, 172, 74, 0.45)',
-              borderRadius: '22px',
-              padding: '1.5rem',
               width: '100%',
-              maxWidth: '760px',
-              maxHeight: '92vh',
+              maxWidth: '1080px',
+              margin: '0 auto 0.75rem auto',
               display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7)'
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '0.75rem',
+              borderBottom: '1px solid rgba(217, 172, 74, 0.25)',
+              paddingBottom: '0.6rem',
+              flexShrink: 0
             }}
           >
-            {/* Book Top Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid rgba(217, 172, 74, 0.25)', paddingBottom: '0.75rem' }}>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: isBookUnlocked(selectedBook.id) ? '#fbbf24' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700 }}>
-                  {isBookUnlocked(selectedBook.id) ? '✦ Luminous Gold Edition · Full Access ✦' : '📖 Free Summary & Preview'}
-                </span>
-                <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.35rem', color: '#fef3c7', fontFamily: 'Georgia, "Times New Roman", serif' }}>
-                  {selectedBook.title}
-                </h3>
-              </div>
-              <button onClick={() => setSelectedBook(null)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', color: '#fde68a', fontSize: '1.4rem', cursor: 'pointer', lineHeight: 1 }}>&times;</button>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: '0.7rem', color: isBookUnlocked(selectedBook.id) ? '#fbbf24' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, display: 'block' }}>
+                {isBookUnlocked(selectedBook.id) ? '✦ Full-Screen Book Reader ✦' : '📖 Free Summary & Preview'}
+              </span>
+              <h3 style={{ margin: '0.15rem 0 0 0', fontSize: '1.25rem', color: '#fef3c7', fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {selectedBook.title}
+              </h3>
             </div>
 
-            {/* Reader Body */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 0 }}>
-              {!isBookUnlocked(selectedBook.id) ? (
-                <div style={{ overflowY: 'auto', marginBottom: '1rem' }}>
-                  <div style={{ backgroundColor: '#0f172a', padding: '1.25rem', borderRadius: '12px', border: '1px solid #334155', marginBottom: '1.25rem' }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#38bdf8', fontSize: '1rem' }}>Book Summary</h4>
-                    <p style={{ color: '#cbd5e1', lineHeight: '1.7', margin: 0, fontSize: '1rem' }}>{selectedBook.summary}</p>
-                  </div>
+            <button
+              onClick={() => setSelectedBook(null)}
+              style={{
+                backgroundColor: '#334155',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '10px',
+                padding: '0.45rem 0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                flexShrink: 0
+              }}
+            >
+              ✕ Close Book
+            </button>
+          </div>
 
-                  <div style={{ textAlign: 'center', padding: '1.5rem', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', border: '1px dashed #fbbf24' }}>
-                    <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '0.95rem' }}>Want to flip through the full book? Pay to unlock every page right here.</p>
-                    <button
-                      onClick={() => {
-                        setSelectedBook(null);
-                        addToCart(selectedBook);
-                        setCheckoutOpen(true);
-                      }}
-                      style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
-                    >
-                      Pay & Unlock Full Book (KES {selectedBook.price}) 💳
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div
-                    className={`book-page-surface ${pageFlipAnim ? 'book-page-flipping' : ''}`}
-                    style={{ flex: 1, overflowY: 'auto', marginBottom: '1rem' }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        fontSize: '0.76rem',
-                        color: '#92400e',
-                        borderBottom: '1px solid rgba(146, 64, 14, 0.18)',
-                        paddingBottom: '0.45rem',
-                        marginBottom: '1rem',
-                        fontStyle: 'italic'
-                      }}
-                    >
-                      <span>{selectedBook.title}</span>
-                      <span>{selectedBook.author || 'Dr. Peter Ngotho Njoroge'}</span>
-                    </div>
+          {/* Reader Content Area */}
+          {!isBookUnlocked(selectedBook.id) ? (
+            <div style={{ flex: 1, width: '100%', maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem' }}>
+              <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '14px', border: '1px solid #334155' }}>
+                <h4 style={{ margin: '0 0 0.6rem 0', color: '#38bdf8', fontSize: '1.1rem' }}>Book Summary</h4>
+                <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: 0, fontSize: '1.05rem' }}>{selectedBook.summary}</p>
+              </div>
 
-                    {renderBookPageBlocks(bookPages[currentPageIndex] || [])}
-
-                    <div
-                      style={{
-                        marginTop: '1.25rem',
-                        paddingTop: '0.6rem',
-                        borderTop: '1px solid rgba(146, 64, 14, 0.18)',
-                        textAlign: 'center',
-                        fontSize: '0.82rem',
-                        color: '#78350f',
-                        fontWeight: 600
-                      }}
-                    >
-                      — Page {currentPageIndex + 1} of {bookPages.length} —
-                    </div>
-                  </div>
-
-                  {/* Page Flip Controls */}
+              <div style={{ textAlign: 'center', padding: '1.75rem', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '14px', border: '1px dashed #fbbf24' }}>
+                <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>Want full-screen page-by-page access to the entire book?</p>
+                <button
+                  onClick={() => {
+                    setSelectedBook(null);
+                    addToCart(selectedBook);
+                    setCheckoutOpen(true);
+                  }}
+                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0.85rem 1.65rem', borderRadius: '10px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
+                >
+                  Pay & Unlock Full Book (KES {selectedBook.price}) 💳
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className={`book-page-surface ${pageFlipAnim ? 'book-page-flipping' : ''}`}>
+                <div>
                   <div
                     style={{
                       display: 'flex',
-                      alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '0.75rem',
+                      alignItems: 'center',
+                      fontSize: '0.78rem',
+                      color: '#92400e',
+                      borderBottom: '1px solid rgba(146, 64, 14, 0.18)',
+                      paddingBottom: '0.4rem',
                       marginBottom: '0.9rem',
-                      backgroundColor: 'rgba(15, 23, 42, 0.85)',
-                      padding: '0.65rem 0.9rem',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(217, 172, 74, 0.25)'
+                      fontStyle: 'italic'
                     }}
                   >
-                    <button
-                      onClick={() => flipToPage(currentPageIndex - 1)}
-                      disabled={currentPageIndex === 0}
-                      style={{
-                        padding: '0.55rem 1rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309',
-                        color: currentPageIndex === 0 ? '#64748b' : '#fff',
-                        fontWeight: 'bold',
-                        cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer',
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      ← Prev Page
-                    </button>
-
-                    <span style={{ fontSize: '0.88rem', color: '#fde68a', fontWeight: 600 }}>
-                      {currentPageIndex + 1} / {bookPages.length}
-                    </span>
-
-                    <button
-                      onClick={() => flipToPage(currentPageIndex + 1)}
-                      disabled={currentPageIndex >= bookPages.length - 1}
-                      style={{
-                        padding: '0.55rem 1rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706',
-                        color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16',
-                        fontWeight: 'bold',
-                        cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer',
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      Next Page →
-                    </button>
+                    <span>{selectedBook.title}</span>
+                    <span>{selectedBook.author || 'Dr. Peter Ngotho Njoroge'}</span>
                   </div>
-                </>
-              )}
-            </div>
 
-            <button onClick={() => setSelectedBook(null)} style={{ padding: '0.7rem', backgroundColor: '#334155', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-              Close Book
-            </button>
-          </div>
+                  {renderBookPageBlocks(bookPages[currentPageIndex] || [])}
+                </div>
+
+                <div
+                  style={{
+                    paddingTop: '0.5rem',
+                    borderTop: '1px solid rgba(146, 64, 14, 0.18)',
+                    textAlign: 'center',
+                    fontSize: '0.84rem',
+                    color: '#78350f',
+                    fontWeight: 600
+                  }}
+                >
+                  — Page {currentPageIndex + 1} of {bookPages.length} —
+                </div>
+              </div>
+
+              {/* Bottom Flip Bar */}
+              <div
+                style={{
+                  width: '100%',
+                  maxWidth: '1080px',
+                  margin: '0.75rem auto 0 auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                  padding: '0.65rem 1rem',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(217, 172, 74, 0.28)',
+                  flexShrink: 0
+                }}
+              >
+                <button
+                  onClick={() => flipToPage(currentPageIndex - 1)}
+                  disabled={currentPageIndex === 0}
+                  style={{
+                    padding: '0.6rem 1.1rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309',
+                    color: currentPageIndex === 0 ? '#64748b' : '#fff',
+                    fontWeight: 'bold',
+                    cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.92rem'
+                  }}
+                >
+                  ← Prev Page
+                </button>
+
+                <span style={{ fontSize: '0.9rem', color: '#fde68a', fontWeight: 600 }}>
+                  Page {currentPageIndex + 1} / {bookPages.length}
+                </span>
+
+                <button
+                  onClick={() => flipToPage(currentPageIndex + 1)}
+                  disabled={currentPageIndex >= bookPages.length - 1}
+                  style={{
+                    padding: '0.6rem 1.1rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706',
+                    color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16',
+                    fontWeight: 'bold',
+                    cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.92rem'
+                  }}
+                >
+                  Next Page →
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
