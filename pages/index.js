@@ -513,6 +513,20 @@ export default function Storefront() {
     setTimeout(() => setBookmarkToast(''), 1800);
   };
 
+  const clearBookmarkForBook = () => {
+    if (!selectedBook) return;
+    const updatedBookmarks = { ...bookBookmarks };
+    delete updatedBookmarks[selectedBook.id];
+    setBookBookmarks(updatedBookmarks);
+    try {
+      localStorage.setItem('luminiousbooks_bookmarks', JSON.stringify(updatedBookmarks));
+    } catch (err) {
+      console.error(err);
+    }
+    setBookmarkToast('Bookmark removed');
+    setTimeout(() => setBookmarkToast(''), 1800);
+  };
+
   const savedBookmarkPageIndex = useMemo(() => {
     if (!selectedBook || bookPages.length === 0) return null;
     const rawIdx = bookBookmarks[selectedBook.id];
@@ -1071,23 +1085,44 @@ export default function Storefront() {
                 </button>
 
                 {savedBookmarkPageIndex !== null && (
-                  <button
-                    type="button"
-                    onClick={() => flipToPage(savedBookmarkPageIndex)}
-                    style={{
-                      backgroundColor: 'rgba(217, 119, 6, 0.2)',
-                      color: '#fde68a',
-                      border: '1px solid rgba(217, 172, 74, 0.45)',
-                      borderRadius: '8px',
-                      padding: '0.45rem 0.7rem',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Go to Bookmark (p.{savedBookmarkPageIndex + 1})
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => flipToPage(savedBookmarkPageIndex)}
+                      style={{
+                        backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                        color: '#fde68a',
+                        border: '1px solid rgba(217, 172, 74, 0.45)',
+                        borderRadius: '8px',
+                        padding: '0.45rem 0.7rem',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Go to Bookmark (p.{savedBookmarkPageIndex + 1})
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={clearBookmarkForBook}
+                      title="Remove saved bookmark"
+                      style={{
+                        backgroundColor: '#1e293b',
+                        color: '#fca5a5',
+                        border: '1px solid rgba(248, 113, 113, 0.4)',
+                        borderRadius: '8px',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      ✕ Clear
+                    </button>
+                  </>
                 )}
 
                 {chapterJumpOptions.length > 0 && (
