@@ -189,6 +189,7 @@ export default function Storefront() {
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
   const [bookBookmarks, setBookBookmarks] = useState({});
   const [bookmarkToast, setBookmarkToast] = useState('');
+  const [loadedBookTexts, setLoadedBookTexts] = useState({});
 
   // Reader Modal State (Books)
   const [selectedBook, setSelectedBook] = useState(null);
@@ -216,6 +217,7 @@ export default function Storefront() {
       title: 'JOURNEYING WITH THE LIVING GOD',
       author: 'Dr. Peter Ngotho Njoroge',
       price: '600',
+      textUrl: '/books/journeying.txt',
       summary:
         'A Personal Encounter. A faith-filled testimonial autobiography and spiritual guide tracing life from childhood and education through severe health, family, and social trials to a profound turning point in God’s presence, followed by reflections on suffering, Christian duties, and prayer.',
       fullText: FULL_JOURNEYING_WITH_THE_LIVING_GOD_TEXT
@@ -278,8 +280,13 @@ export default function Storefront() {
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
     const budget = isMobileScreen ? 420 : 720;
-    return paginateBookText(selectedBook.fullText || selectedBook.summary || '', budget);
-  }, [selectedBook, isMobileScreen]);
+    const sourceText =
+      loadedBookTexts[selectedBook.id] ||
+      selectedBook.fullText ||
+      selectedBook.summary ||
+      '';
+    return paginateBookText(sourceText, budget);
+  }, [selectedBook, loadedBookTexts, isMobileScreen]);
 
   const chapterJumpOptions = useMemo(() => {
     const options = [{ label: 'Start / Cover Info', pageIndex: 0 }];
@@ -308,12 +315,26 @@ export default function Storefront() {
     return matched;
   }, [chapterJumpOptions, currentPageIndex]);
 
-  const openBookReader = (book) => {
+  const openBookReader = async (book) => {
     setSelectedBook(book);
     setCurrentPageIndex(0);
     setBookmarkToast('');
     if (pageSurfaceRef.current) {
       pageSurfaceRef.current.scrollTop = 0;
+    }
+
+    if (book.textUrl && !loadedBookTexts[book.id]) {
+      try {
+        const res = await fetch(book.textUrl);
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.trim()) {
+            setLoadedBookTexts((prev) => ({ ...prev, [book.id]: text }));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -434,10 +455,10 @@ export default function Storefront() {
       setPaymentSuccess(true);
 
       const purchasedBookIds = cart
-        .filter(item => item.fullText !== undefined || String(item.id).startsWith('b'))
+        .filter(item => item.fullText !== undefined || item.textUrl !== undefined || String(item.id).startsWith('b'))
         .map(item => item.id);
       const purchasedSongIds = cart
-        .filter(item => item.description !== undefined && !item.fullText && !String(item.id).startsWith('b'))
+        .filter(item => item.description !== undefined && !item.fullText && !item.textUrl && !String(item.id).startsWith('b'))
         .map(item => item.id);
 
       const updatedBookIds = Array.from(new Set([...unlockedBookIds, ...purchasedBookIds]));
