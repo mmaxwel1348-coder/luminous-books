@@ -69,17 +69,69 @@ A prayer for wisdom, discernment, and grace for mentors and young people alike.
 BIBLIOGRAPHY
 Reference notes and further reading on mentorship, youth development, and spiritual guidance.`;
 
-const FULL_JOURNEYING_WITH_THE_LIVING_GOD_TEXT = `JOURNEYING WITH THE LIVING GOD
+const FULL_JOURNEYING_WITH_THE_LIVING_GOD_TEXT = `JOURNEYING WITH THE LIVING GOD: A PERSONAL ENCOUNTER
 By Dr. Peter Ngotho Njoroge
+First Edition: 2020 | Thika, Kenya
 
-INTRODUCTION
-An invitation to walk daily with the Living God through faith, reflection, and intentional spiritual growth amid life's changing seasons.
+DEDICATION
+Dedicated to the author's wife and children for their prayers and moral support, and to the Vincentian Ministries for bringing hope to God's children.
 
-CHAPTER ONE: WALKING IN FAITH
-Paste the full text of "Journeying with the Living God" here so the reader paginates every chapter and page automatically.`;
+ACKNOWLEDGMENTS
+Reflects on six years of writing and research alongside family life, ministry, and profession, thanking the Holy Trinity, the author's wife Regina and children Joy, Elvis, and Vincent, parents and siblings, reviewers, and readers.
+
+FOREWORD
+Introduces the book as a faith journey rooted in an ordinary life's daily struggles, family trials, and the meaning found in trusting God's plan and duties toward self, neighbor, and God.
+
+PREFACE
+Explains the book as a testimonial autobiography moving from early blessings through severe trials to a turning point in God's presence, followed by biblical and church teachings on suffering, Christian duties, and prayer.
+
+CHAPTER ONE: CHILDHOOD MEMORIES
+Recalls growing up in 1970s Uasin Gishu (Burnt Forest) as the third of twelve children to Michael and Jacinta, shaped by family history, hard work, humor, discipline, and daily Catholic prayer.
+
+CHAPTER TWO: MY EDUCATION
+Traces schooling from Koiluget Primary and Eldoret Union School to Njoro Boys High School and studying Pharmacy at the University of Nairobi, alongside leadership, music, and Kiswahili mashairi poetry.
+
+CHAPTER THREE: MY FAITH
+Follows early parish life as an altar boy with Fr. Francis, navigating religious questions in Eldoret and secondary school through Y.C.S., and leading Catholic student life and music at university.
+
+CHAPTER FOUR: THE SEASON OF TRIBULATIONS
+Chronicles early adulthood challenges including health issues, campus disruptions, the 1992 ethnic clashes and displacement to Nyandarua, and navigating HELB and travel hardships to finish university.
+
+CHAPTER FIVE: FROM THE FRYING PAN INTO THE FIRE
+Describes starting work in October 1997, drifting from regular prayer, enduring years of cervical spondylosis and trigeminal neuralgia, church marriage, pregnancy losses, and raising children through severe allergies and reflux.
+
+CHAPTER SIX: MY TURNING POINT
+Narrates attending the 2013 Vincentian retreat at Don Bosco Church, experiencing physical healing after sixteen years of pain, and praying through generational bondages for the healing of the children and restored voice and talents.
+
+CHAPTER SEVEN: THE MISSING LINK
+Covers later trials—including a stalled fourth music album, ongoing food allergies, a difficult house-help incident, a car accident, a home break-in, and family prayer and healing Masses—culminating in deliverance and gratitude.
+
+SUMMARY OF PART I
+Summarizes the testimonial autobiography around five core lessons: faith-rooted parenting and youth formation, God's presence inside life's storms, vulnerability before God, everyday miracles, and seeking deeper spiritual understanding.
+
+CHAPTER EIGHT: FOLLOWING CHRIST
+Opens Part II by examining Christian discipleship and categories of suffering—our cross, the suffering of Job and saints, and the roots of suffering—through Scripture and church teaching.
+
+CHAPTER NINE: CONSEQUENTIAL SUFFERING
+Explores unnecessary suffering stemming from inner wounds, sin, unforgiveness, unhealed trauma, harmful relationships, and ancestral bondages, along with steps toward repentance, forgiveness, sanctification, and spiritual warfare.
+
+CHAPTER TEN: WHAT GOD REQUIRES OF US
+Focuses on duties toward God—seeking and fearing the Lord, obeying His commandments in love, offering unceasing praise even in distress, and giving genuine tithes, offerings, and participation in the Mass.
+
+CHAPTER ELEVEN: CATEGORY B - DUTIES TOWARDS SELF
+Examines inner spiritual care through repentance and confession, limitless forgiveness, humility over pride, and persistent personal, family, and intercessory prayer.
+
+CHAPTER TWELVE: CATEGORY C - DUTIES TOWARDS OTHERS
+Highlights service to others through works of mercy and charity, witnessing and evangelization, and using God-given talents, gifts, and fruits of the Holy Spirit with humility.
+
+CHAPTER THIRTEEN: PRAYERS FOR GUIDANCE
+Brings together prayers for praise to the Holy Trinity, forgiveness, confession, deliverance, healing, protection, sufferers, a prayerful heart, obedience, humility, offerings, the needy, and the Peace Prayer of St. Francis of Assisi.
+
+BIBLIOGRAPHY
+Draws on Scripture (extensively using the Good News Bible), church teachings, writings of the saints, and spiritual works referenced across the book's testimonial and doctrinal chapters.`;
 
 const MAJOR_HEADING_REGEX =
-  /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|CONCLUSION TO THE BOOK|CLOSING PRAYER|BIBLIOGRAPHY)/i;
+  /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|PREFACE|SUMMARY OF PART I|CONCLUSION TO THE BOOK|CLOSING PRAYER|BIBLIOGRAPHY)/i;
 
 function paginateBookText(rawText, charsPerPage = 720) {
   if (!rawText || !rawText.trim()) return [];
@@ -165,7 +217,7 @@ export default function Storefront() {
       author: 'Dr. Peter Ngotho Njoroge',
       price: '600',
       summary:
-        'Walking with the Living God Through Every Season. A reflective guide to deepening faith, spiritual resilience, and everyday fellowship with God through prayer, scripture, and purposeful living. Discover how believers can stay grounded, encouraged, and aligned with God’s guidance through trials, transitions, and growth.',
+        'A Personal Encounter. A faith-filled testimonial autobiography and spiritual guide tracing life from childhood and education through severe health, family, and social trials to a profound turning point in God’s presence, followed by reflections on suffering, Christian duties, and prayer.',
       fullText: FULL_JOURNEYING_WITH_THE_LIVING_GOD_TEXT
     }
   ];
