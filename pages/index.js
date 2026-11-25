@@ -1077,58 +1077,54 @@ export default function Storefront() {
                 </div>
               </div>
 
-              {/* Bottom Flip Bar */}
+              {/* Arrows Only at Bottom */}
               <div
                 style={{
                   width: '100%',
-                  margin: '0.45rem 0 0 0',
+                  margin: '0.35rem 0 0 0',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '0.75rem',
-                  backgroundColor: 'rgba(15, 23, 42, 0.92)',
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(217, 172, 74, 0.28)',
+                  padding: '0 0.25rem',
                   flexShrink: 0
                 }}
               >
                 <button
+                  type="button"
+                  aria-label="Previous Page"
                   onClick={() => flipToPage(currentPageIndex - 1)}
                   disabled={currentPageIndex === 0}
                   style={{
-                    padding: '0.55rem 1.05rem',
-                    borderRadius: '8px',
+                    background: 'none',
                     border: 'none',
-                    backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309',
-                    color: currentPageIndex === 0 ? '#64748b' : '#fff',
+                    padding: '0.2rem 0.6rem',
+                    color: currentPageIndex === 0 ? 'rgba(253, 230, 138, 0.22)' : '#fbbf24',
                     fontWeight: 'bold',
                     cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer',
-                    fontSize: '0.9rem'
+                    fontSize: '1.65rem',
+                    lineHeight: 1
                   }}
                 >
-                  ← Prev Page
+                  ←
                 </button>
 
-                <span style={{ fontSize: '0.9rem', color: '#fde68a', fontWeight: 600 }}>
-                  Page {currentPageIndex + 1} / {bookPages.length}
-                </span>
-
                 <button
+                  type="button"
+                  aria-label="Next Page"
                   onClick={() => flipToPage(currentPageIndex + 1)}
                   disabled={currentPageIndex >= bookPages.length - 1}
                   style={{
-                    padding: '0.55rem 1.05rem',
-                    borderRadius: '8px',
+                    background: 'none',
                     border: 'none',
-                    backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706',
-                    color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16',
+                    padding: '0.2rem 0.6rem',
+                    color: currentPageIndex >= bookPages.length - 1 ? 'rgba(253, 230, 138, 0.22)' : '#fbbf24',
                     fontWeight: 'bold',
                     cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '0.9rem'
+                    fontSize: '1.65rem',
+                    lineHeight: 1
                   }}
                 >
-                  Next Page →
+                  →
                 </button>
               </div>
             </>
