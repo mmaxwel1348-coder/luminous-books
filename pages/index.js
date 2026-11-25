@@ -194,6 +194,7 @@ export default function Storefront() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
+  // Locked by default until customer completes payment
   const [unlockedBookIds, setUnlockedBookIds] = useState([]);
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
   const [bookBookmarks, setBookBookmarks] = useState({});
@@ -252,6 +253,7 @@ export default function Storefront() {
         setMpesaReceiveNumber(savedPhone);
       }
 
+      // Start locked unless explicitly unlocked in this browser
       const savedUnlockedBooks = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_books') || '[]');
       setUnlockedBookIds(Array.isArray(savedUnlockedBooks) ? savedUnlockedBooks : []);
 
@@ -262,9 +264,21 @@ export default function Storefront() {
       setBookBookmarks(savedBookmarks);
     } catch (e) {
       setBooks(defaultBooks);
+      setUnlockedBookIds([]);
     }
     setLoading(false);
   }, []);
+
+  const resetAllUnlocks = () => {
+    setUnlockedBookIds([]);
+    setUnlockedSongIds([]);
+    try {
+      localStorage.removeItem('luminiousbooks_unlocked_books');
+      localStorage.removeItem('luminiousbooks_unlocked_songs');
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
@@ -285,7 +299,8 @@ export default function Storefront() {
       pageSurfaceRef.current.scrollTop = 0;
     }
 
-    if (book.textUrl && !loadedBookTexts[book.id]) {
+    // Only fetch full manuscript text if the book is actually unlocked
+    if (isBookUnlocked(book.id) && book.textUrl && !loadedBookTexts[book.id]) {
       try {
         const res = await fetch(book.textUrl);
         if (res.ok) {
@@ -653,7 +668,7 @@ export default function Storefront() {
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read free summaries and unlock full-screen page-by-page reading after payment.</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read free summaries and pay via M-Pesa to unlock full-screen reading.</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
@@ -671,13 +686,13 @@ export default function Storefront() {
                     <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: unlocked ? '#38bdf8' : '#34d399' }}>
-                          {unlocked ? '🔓 Unlocked' : `KES ${book.price}`}
+                          {unlocked ? '🔓 Unlocked' : `🔒 KES ${book.price}`}
                         </span>
                         <button
                           onClick={() => openBookReader(book)}
                           style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
                         >
-                          {unlocked ? '📖 Open Book' : '📖 Read Summary'}
+                          {unlocked ? '📖 Read Full Book' : '🔒 Summary & Pay'}
                         </button>
                       </div>
                       {!unlocked && (
@@ -753,7 +768,18 @@ export default function Storefront() {
         {/* CART VIEW */}
         {activeCategory === 'cart' && (
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.25rem' }}>🛒 Your Shopping Cart</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>🛒 Your Shopping Cart</h2>
+              {unlockedBookIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={resetAllUnlocks}
+                  style={{ backgroundColor: '#334155', color: '#fca5a5', border: '1px solid #475569', padding: '0.45rem 0.8rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}
+                >
+                  🔒 Lock Books Again
+                </button>
+              )}
+            </div>
             {cart.length === 0 ? (
               <div style={{ backgroundColor: '#1e293b', padding: '2.5rem', borderRadius: '16px', textAlign: 'center', border: '1px solid #334155' }}>
                 <p style={{ color: '#94a3b8', fontSize: '1.05rem', margin: 0 }}>Your cart is empty.</p>
@@ -899,12 +925,12 @@ export default function Storefront() {
           {!isBookUnlocked(selectedBook.id) ? (
             <div style={{ flex: 1, minHeight: 0, width: '100%', margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', overflowY: 'auto' }}>
               <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '14px', border: '1px solid #334155' }}>
-                <h4 style={{ margin: '0 0 0.6rem 0', color: '#38bdf8', fontSize: '1.1rem' }}>Book Summary</h4>
+                <h4 style={{ margin: '0 0 0.6rem 0', color: '#38bdf8', fontSize: '1.1rem' }}>🔒 Book Locked — Summary Preview</h4>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: 0, fontSize: '1.05rem' }}>{selectedBook.summary}</p>
               </div>
 
               <div style={{ textAlign: 'center', padding: '1.75rem', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '14px', border: '1px dashed #fbbf24' }}>
-                <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>Pay to unlock full-screen page-by-page access to the entire book.</p>
+                <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>Send payment via M-Pesa to unlock the full book pages.</p>
                 <button
                   onClick={() => {
                     setSelectedBook(null);
