@@ -137,9 +137,17 @@ function buildStructuredBlocks(rawText) {
       continue;
     }
 
+    const isOrphanFragment =
+      !/[.!?]["”']?$/.test(line) &&
+      line.length <= 16 &&
+      line.split(/\s+/).length <= 3;
+
+    if (isOrphanFragment) {
+      continue;
+    }
+
     paraBuffer.push(line);
 
-    // If a line ends with sentence punctuation and the next line starts a new thought with a capital/quote, keep paragraphs crisp
     if (/[.!?]["”']?$/.test(line) && line.length < 65) {
       flushParagraph();
     }
