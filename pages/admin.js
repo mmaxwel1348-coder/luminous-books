@@ -3,6 +3,8 @@ import Head from 'next/head';
 
 const OWNER_PIN = '8086';
 const ISSUED_CODES_STORAGE_KEY = 'luminiousbooks_issued_code_entries';
+const SALES_STORAGE_KEY = 'luminiousbooks_sales';
+const EMPTY_SALES_DATA = { totalSold: 0, totalRevenue: 0, salesList: [] };
 
 const DEFAULT_ADMIN_BOOKS = [
   { id: 'b1', title: 'A HERITAGE OF GOLD', prefix: 'HG', price: '600' },
@@ -25,7 +27,7 @@ export default function AdminPanel() {
 
   const [mpesaNumber, setMpesaNumber] = useState('0712345678');
 
-  const [salesData, setSalesData] = useState({ totalSold: 0, totalRevenue: 0, salesList: [] });
+  const [salesData, setSalesData] = useState(EMPTY_SALES_DATA);
   const [localBooks, setLocalBooks] = useState([]);
   const [localSongs, setLocalSongs] = useState([]);
 
@@ -39,10 +41,20 @@ export default function AdminPanel() {
   const [copiedCode, setCopiedCode] = useState('');
   const [issuedCodeEntries, setIssuedCodeEntries] = useState([]);
 
+  const resetSalesAndOrdersToZero = () => {
+    setSalesData(EMPTY_SALES_DATA);
+    try {
+      localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(EMPTY_SALES_DATA));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     try {
-      const savedSales = localStorage.getItem('luminiousbooks_sales');
-      if (savedSales) setSalesData(JSON.parse(savedSales));
+      // Reset books sold, total revenue, and orders received to zero
+      localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(EMPTY_SALES_DATA));
+      setSalesData(EMPTY_SALES_DATA);
 
       const savedBooks = localStorage.getItem('luminiousbooks_local_catalog');
       if (savedBooks) setLocalBooks(JSON.parse(savedBooks));
@@ -412,7 +424,16 @@ export default function AdminPanel() {
 
           {activeTab === 'analytics' && (
             <div>
-              <h1 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>📊 Sales & Analytics</h1>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                <h1 style={{ fontSize: '1.8rem', margin: 0 }}>📊 Sales & Analytics</h1>
+                <button
+                  type="button"
+                  onClick={resetSalesAndOrdersToZero}
+                  style={{ padding: '0.6rem 1rem', backgroundColor: '#334155', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  Reset to Zero
+                </button>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2.5rem', width: '100%' }}>
                 <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '16px', border: '1px solid #334155', boxSizing: 'border-box' }}>
                   <p style={{ margin: '0 0 0.5rem 0', color: '#94a3b8' }}>Total Books Sold</p>
@@ -421,6 +442,10 @@ export default function AdminPanel() {
                 <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '16px', border: '1px solid #334155', boxSizing: 'border-box' }}>
                   <p style={{ margin: '0 0 0.5rem 0', color: '#94a3b8' }}>Total Revenue</p>
                   <h2 style={{ fontSize: '2.2rem', margin: 0, color: '#34d399' }}>KES {salesData.totalRevenue}</h2>
+                </div>
+                <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '16px', border: '1px solid #334155', boxSizing: 'border-box' }}>
+                  <p style={{ margin: '0 0 0.5rem 0', color: '#94a3b8' }}>Orders Received</p>
+                  <h2 style={{ fontSize: '2.2rem', margin: 0, color: '#fde68a' }}>{salesData.salesList.length}</h2>
                 </div>
               </div>
             </div>
