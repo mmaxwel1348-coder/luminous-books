@@ -157,7 +157,7 @@ function buildStructuredBlocks(rawText) {
   return blocks;
 }
 
-function paginateBookText(rawText, charsPerPage = 720) {
+function paginateBookText(rawText, charsPerPage = 1150) {
   const blocks = buildStructuredBlocks(rawText);
   if (blocks.length === 0) return [];
 
@@ -168,7 +168,7 @@ function paginateBookText(rawText, charsPerPage = 720) {
   for (const block of blocks) {
     const blockLen = block.text.length + (block.type === 'heading' ? 140 : 24);
 
-    if (block.type === 'heading' && currentBlocks.length > 0 && currentLen > 90) {
+    if (block.type === 'heading' && currentBlocks.length > 0 && currentLen > 120) {
       pages.push(currentBlocks);
       currentBlocks = [block];
       currentLen = blockLen;
@@ -300,7 +300,7 @@ export default function Storefront() {
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
-    const budget = isMobileScreen ? 520 : 880;
+    const budget = isMobileScreen ? 680 : 1150;
     const sourceText =
       loadedBookTexts[selectedBook.id] ||
       selectedBook.fullText ||
@@ -548,10 +548,10 @@ export default function Storefront() {
                 : 'linear-gradient(90deg, rgba(146, 64, 14, 0.14), rgba(146, 64, 14, 0.02))',
               borderLeft: '5px solid #b45309',
               borderBottom: '1px solid rgba(180, 83, 9, 0.22)',
-              padding: '0.85rem 1.15rem',
+              padding: '0.85rem 1.2rem',
               borderRadius: '0 12px 12px 0',
-              marginTop: idx === 0 ? '0.15rem' : '1.25rem',
-              marginBottom: '1rem'
+              marginTop: idx === 0 ? '0.1rem' : '1.15rem',
+              marginBottom: '0.95rem'
             }}
           >
             <div
@@ -587,10 +587,10 @@ export default function Storefront() {
         <p
           key={idx}
           style={{
-            margin: '0 0 0.9rem 0',
+            margin: '0 0 0.85rem 0',
             fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '1.05rem',
-            lineHeight: 1.75,
+            fontSize: '1.08rem',
+            lineHeight: 1.72,
             color: '#292524',
             textAlign: 'left'
           }}
@@ -632,7 +632,7 @@ export default function Storefront() {
           background: linear-gradient(160deg, #1b150c 0%, #0f172a 55%, #17120a 100%);
           display: flex;
           flex-direction: column;
-          padding: 0.9rem 1.25rem;
+          padding: 0.45rem 0.55rem;
           overflow: hidden;
           min-height: 0;
         }
@@ -641,14 +641,14 @@ export default function Storefront() {
           flex: 1;
           min-height: 0;
           width: 100%;
-          max-width: 1080px;
-          margin: 0 auto;
+          max-width: none;
+          margin: 0;
           background:
             radial-gradient(circle at top right, rgba(217, 172, 74, 0.14), transparent 45%),
-            linear-gradient(to right, rgba(120, 83, 28, 0.09) 0%, rgba(253, 250, 242, 0.99) 3.5%, #fdfaf2 96.5%, rgba(120, 83, 28, 0.09) 100%);
+            linear-gradient(to right, rgba(120, 83, 28, 0.09) 0%, rgba(253, 250, 242, 0.99) 2.5%, #fdfaf2 97.5%, rgba(120, 83, 28, 0.09) 100%);
           color: #292524;
-          border-radius: 16px;
-          padding: 1.5rem 2rem;
+          border-radius: 12px;
+          padding: 1.35rem 2.25rem;
           box-shadow:
             inset 8px 0 14px -6px rgba(92, 64, 24, 0.24),
             0 16px 38px rgba(0, 0, 0, 0.45);
@@ -670,8 +670,8 @@ export default function Storefront() {
           .desktop-sidebar { display: none !important; }
           .mobile-header { display: flex !important; }
           .main-content { margin-left: 0 !important; padding: 1.5rem 1rem !important; }
-          .fullscreen-reader-shell { padding: 0.65rem 0.75rem; }
-          .book-page-surface { padding: 1.15rem 1.1rem; border-radius: 12px; }
+          .fullscreen-reader-shell { padding: 0.35rem 0.35rem; }
+          .book-page-surface { padding: 1rem 0.95rem; border-radius: 10px; }
         }
       `}</style>
 
@@ -877,23 +877,24 @@ export default function Storefront() {
           <div
             style={{
               width: '100%',
-              maxWidth: '1080px',
-              margin: '0 auto 0.75rem auto',
+              margin: '0 0 0.45rem 0',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '0.75rem',
+              gap: '0.6rem',
               borderBottom: '1px solid rgba(217, 172, 74, 0.25)',
-              paddingBottom: '0.6rem',
+              paddingBottom: '0.45rem',
+              paddingLeft: '0.25rem',
+              paddingRight: '0.25rem',
               flexShrink: 0
             }}
           >
             <div style={{ minWidth: 0, flex: '1 1 200px' }}>
-              <span style={{ fontSize: '0.7rem', color: isBookUnlocked(selectedBook.id) ? '#fbbf24' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, display: 'block' }}>
+              <span style={{ fontSize: '0.68rem', color: isBookUnlocked(selectedBook.id) ? '#fbbf24' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, display: 'block' }}>
                 {isBookUnlocked(selectedBook.id) ? '✦ Full-Screen Book Reader ✦' : '📖 Free Summary & Preview'}
               </span>
-              <h3 style={{ margin: '0.15rem 0 0 0', fontSize: '1.25rem', color: '#fef3c7', fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <h3 style={{ margin: '0.1rem 0 0 0', fontSize: '1.2rem', color: '#fef3c7', fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {selectedBook.title}
               </h3>
             </div>
@@ -908,8 +909,8 @@ export default function Storefront() {
                     color: '#fef3c7',
                     border: '1px solid rgba(217, 172, 74, 0.45)',
                     borderRadius: '8px',
-                    padding: '0.45rem 0.7rem',
-                    fontSize: '0.82rem',
+                    padding: '0.4rem 0.65rem',
+                    fontSize: '0.8rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     whiteSpace: 'nowrap'
@@ -928,8 +929,8 @@ export default function Storefront() {
                         color: '#fde68a',
                         border: '1px solid rgba(217, 172, 74, 0.45)',
                         borderRadius: '8px',
-                        padding: '0.45rem 0.7rem',
-                        fontSize: '0.82rem',
+                        padding: '0.4rem 0.65rem',
+                        fontSize: '0.8rem',
                         fontWeight: 600,
                         cursor: 'pointer',
                         whiteSpace: 'nowrap'
@@ -947,8 +948,8 @@ export default function Storefront() {
                         color: '#fca5a5',
                         border: '1px solid rgba(248, 113, 113, 0.4)',
                         borderRadius: '8px',
-                        padding: '0.45rem 0.65rem',
-                        fontSize: '0.82rem',
+                        padding: '0.4rem 0.6rem',
+                        fontSize: '0.8rem',
                         fontWeight: 600,
                         cursor: 'pointer',
                         whiteSpace: 'nowrap'
@@ -977,8 +978,8 @@ export default function Storefront() {
                         color: '#fef3c7',
                         border: '1px solid rgba(217, 172, 74, 0.45)',
                         borderRadius: '8px',
-                        padding: '0.45rem 0.65rem',
-                        fontSize: '0.85rem',
+                        padding: '0.4rem 0.6rem',
+                        fontSize: '0.82rem',
                         maxWidth: '220px',
                         cursor: 'pointer'
                       }}
@@ -1001,10 +1002,10 @@ export default function Storefront() {
                 color: '#fff',
                 border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: '10px',
-                padding: '0.45rem 0.9rem',
+                padding: '0.4rem 0.85rem',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                fontSize: '0.9rem',
+                fontSize: '0.88rem',
                 flexShrink: 0
               }}
             >
@@ -1014,7 +1015,7 @@ export default function Storefront() {
 
           {/* Reader Content Area */}
           {!isBookUnlocked(selectedBook.id) ? (
-            <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', overflowY: 'auto' }}>
+            <div style={{ flex: 1, minHeight: 0, width: '100%', margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', overflowY: 'auto' }}>
               <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '14px', border: '1px solid #334155' }}>
                 <h4 style={{ margin: '0 0 0.6rem 0', color: '#38bdf8', fontSize: '1.1rem' }}>Book Summary</h4>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: 0, fontSize: '1.05rem' }}>{selectedBook.summary}</p>
@@ -1049,8 +1050,8 @@ export default function Storefront() {
                       fontSize: '0.78rem',
                       color: '#92400e',
                       borderBottom: '1px solid rgba(146, 64, 14, 0.18)',
-                      paddingBottom: '0.4rem',
-                      marginBottom: '0.9rem',
+                      paddingBottom: '0.35rem',
+                      marginBottom: '0.8rem',
                       fontStyle: 'italic'
                     }}
                   >
@@ -1063,8 +1064,8 @@ export default function Storefront() {
 
                 <div
                   style={{
-                    paddingTop: '0.5rem',
-                    marginTop: '0.75rem',
+                    paddingTop: '0.45rem',
+                    marginTop: '0.6rem',
                     borderTop: '1px solid rgba(146, 64, 14, 0.18)',
                     textAlign: 'center',
                     fontSize: '0.84rem',
@@ -1080,15 +1081,14 @@ export default function Storefront() {
               <div
                 style={{
                   width: '100%',
-                  maxWidth: '1080px',
-                  margin: '0.75rem auto 0 auto',
+                  margin: '0.45rem 0 0 0',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '0.75rem',
                   backgroundColor: 'rgba(15, 23, 42, 0.92)',
-                  padding: '0.65rem 1rem',
-                  borderRadius: '12px',
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '10px',
                   border: '1px solid rgba(217, 172, 74, 0.28)',
                   flexShrink: 0
                 }}
@@ -1097,14 +1097,14 @@ export default function Storefront() {
                   onClick={() => flipToPage(currentPageIndex - 1)}
                   disabled={currentPageIndex === 0}
                   style={{
-                    padding: '0.6rem 1.1rem',
+                    padding: '0.55rem 1.05rem',
                     borderRadius: '8px',
                     border: 'none',
                     backgroundColor: currentPageIndex === 0 ? '#1e293b' : '#b45309',
                     color: currentPageIndex === 0 ? '#64748b' : '#fff',
                     fontWeight: 'bold',
                     cursor: currentPageIndex === 0 ? 'not-allowed' : 'pointer',
-                    fontSize: '0.92rem'
+                    fontSize: '0.9rem'
                   }}
                 >
                   ← Prev Page
@@ -1118,14 +1118,14 @@ export default function Storefront() {
                   onClick={() => flipToPage(currentPageIndex + 1)}
                   disabled={currentPageIndex >= bookPages.length - 1}
                   style={{
-                    padding: '0.6rem 1.1rem',
+                    padding: '0.55rem 1.05rem',
                     borderRadius: '8px',
                     border: 'none',
                     backgroundColor: currentPageIndex >= bookPages.length - 1 ? '#1e293b' : '#d97706',
                     color: currentPageIndex >= bookPages.length - 1 ? '#64748b' : '#090d16',
                     fontWeight: 'bold',
                     cursor: currentPageIndex >= bookPages.length - 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '0.92rem'
+                    fontSize: '0.9rem'
                   }}
                 >
                   Next Page →
