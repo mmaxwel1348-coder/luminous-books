@@ -232,26 +232,7 @@ export default function Storefront() {
     }
   ];
 
-  const defaultSongs = [
-    {
-      id: 'm1',
-      title: 'Sacred Hymns Vol. 1',
-      artist: 'Dr. Peter Ngotho Njoroge',
-      price: '200',
-      description: 'Inspiring choral and devotional audio collection (MP3/WAV).',
-      previewAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      fullAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-    },
-    {
-      id: 'm2',
-      title: 'Divine Grace - Full Album',
-      artist: 'Dr. Peter Ngotho Njoroge',
-      price: '500',
-      description: 'Complete uplifting musical experience with soul-stirring melodies.',
-      previewAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-      fullAudio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'
-    },
-  ];
+  const defaultSongs = [];
 
   useEffect(() => {
     const checkViewport = () => setIsMobileScreen(window.innerWidth <= 768);
@@ -272,10 +253,10 @@ export default function Storefront() {
       }
 
       const savedUnlockedBooks = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_books') || '[]');
-      setUnlockedBookIds(savedUnlockedBooks);
+      setUnlockedBookIds(Array.isArray(savedUnlockedBooks) ? savedUnlockedBooks : []);
 
       const savedUnlockedSongs = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_songs') || '[]');
-      setUnlockedSongIds(savedUnlockedSongs);
+      setUnlockedSongIds(Array.isArray(savedUnlockedSongs) ? savedUnlockedSongs : []);
 
       const savedBookmarks = JSON.parse(localStorage.getItem('luminiousbooks_bookmarks') || '{}');
       setBookBookmarks(savedBookmarks);
@@ -723,43 +704,49 @@ export default function Storefront() {
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Soul-stirring hymns and spiritual audio tracks by Dr. Peter Ngotho Njoroge.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
-              {allSongs.map((track) => {
-                const unlocked = isSongUnlocked(track.id);
-                return (
-                  <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ height: '140px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎵</div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
-                      <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Composer: {track.artist || 'Dr. Peter Ngotho Njoroge'}</p>
-                      <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{track.description}</p>
-                    </div>
-
-                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: unlocked ? '#38bdf8' : '#34d399' }}>
-                          {unlocked ? '🔓 Unlocked' : `KES ${track.price}`}
-                        </span>
-                        <button
-                          onClick={() => setSelectedSong(track)}
-                          style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
-                        >
-                          {unlocked ? '🎧 Listen Full' : '🎧 Preview Audio'}
-                        </button>
+            {allSongs.length === 0 ? (
+              <div style={{ backgroundColor: '#1e293b', padding: '2.5rem', borderRadius: '16px', textAlign: 'center', border: '1px solid #334155' }}>
+                <p style={{ color: '#94a3b8', fontSize: '1.05rem', margin: 0 }}>No songs available right now.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
+                {allSongs.map((track) => {
+                  const unlocked = isSongUnlocked(track.id);
+                  return (
+                    <div key={track.id} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ height: '140px', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', marginBottom: '1rem' }}>🎵</div>
+                        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: '#fff' }}>{track.title}</h3>
+                        <p style={{ color: '#818cf8', margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: '600' }}>Composer: {track.artist || 'Dr. Peter Ngotho Njoroge'}</p>
+                        <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5' }}>{track.description}</p>
                       </div>
-                      {!unlocked && (
-                        <button
-                          onClick={() => addToCart(track)}
-                          style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
-                        >
-                          + Add to Cart (KES {track.price})
-                        </button>
-                      )}
+
+                      <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: unlocked ? '#38bdf8' : '#34d399' }}>
+                            {unlocked ? '🔓 Unlocked' : `KES ${track.price}`}
+                          </span>
+                          <button
+                            onClick={() => setSelectedSong(track)}
+                            style={{ backgroundColor: unlocked ? '#059669' : '#334155', color: '#fff', padding: '0.5rem 0.85rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}
+                          >
+                            {unlocked ? '🎧 Listen Full' : '🎧 Preview Audio'}
+                          </button>
+                        </div>
+                        {!unlocked && (
+                          <button
+                            onClick={() => addToCart(track)}
+                            style={{ backgroundColor: '#2563eb', color: '#fff', padding: '0.65rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                          >
+                            + Add to Cart (KES {track.price})
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -917,7 +904,7 @@ export default function Storefront() {
               </div>
 
               <div style={{ textAlign: 'center', padding: '1.75rem', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '14px', border: '1px dashed #fbbf24' }}>
-                <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>Want full-screen page-by-page access to the entire book?</p>
+                <p style={{ color: '#e2e8f0', margin: '0 0 1rem 0', fontSize: '1rem' }}>Pay to unlock full-screen page-by-page access to the entire book.</p>
                 <button
                   onClick={() => {
                     setSelectedBook(null);
@@ -1030,7 +1017,7 @@ export default function Storefront() {
                   <div style={{ backgroundColor: '#0f172a', padding: '1rem', borderRadius: '12px', border: '1px solid #334155', marginBottom: '1rem', textAlign: 'center' }}>
                     <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Sample Preview:</p>
                     <audio controls style={{ width: '100%' }}>
-                      <source src={selectedSong.previewAudio || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'} type="audio/mpeg" />
+                      <source src={selectedSong.previewAudio} type="audio/mpeg" />
                       Your browser does not support the audio element.
                     </audio>
                   </div>
@@ -1125,7 +1112,7 @@ export default function Storefront() {
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
                 <h3 style={{ fontSize: '1.3rem', color: '#34d399', margin: '0 0 0.5rem 0' }}>Order Confirmed!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.25rem' }}>Thank you! Your full book and audio access has been unlocked. Open the book to start flipping through the pages.</p>
+                <p style={{ color: '#94a3b8', marginBottom: '1.25rem' }}>Thank you! Your full book access has been unlocked. Open the book to start flipping through the pages.</p>
                 <button onClick={closeModal} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                   Done
                 </button>
