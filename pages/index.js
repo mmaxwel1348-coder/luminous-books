@@ -215,6 +215,7 @@ export default function Storefront() {
       title: 'A HERITAGE OF GOLD',
       author: 'Dr. Peter Ngotho Njoroge',
       price: '600',
+      textUrl: '/books/heritage-of-gold.txt',
       summary:
         'Unveiling the Treasure in Our Youth. In a world wounded by moral confusion, broken families, and widening generational gaps, mentorship is no longer a luxury—it is a lifeline. Discover how parents, teachers, mentors, and leaders can recognize and draw out the gold within every young person.',
       fullText: FULL_HERITAGE_OF_GOLD_TEXT
