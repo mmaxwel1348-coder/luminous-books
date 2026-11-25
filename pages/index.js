@@ -196,6 +196,8 @@ export default function Storefront() {
 
   const [unlockedBookIds, setUnlockedBookIds] = useState([]);
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
+  const [bookBookmarks, setBookBookmarks] = useState({});
+  const [bookmarkToast, setBookmarkToast] = useState('');
   const [loadedBookTexts, setLoadedBookTexts] = useState({});
 
   // Reader Modal State (Books)
@@ -273,6 +275,9 @@ export default function Storefront() {
 
       const savedUnlockedSongs = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_songs') || '[]');
       setUnlockedSongIds(savedUnlockedSongs);
+
+      const savedBookmarks = JSON.parse(localStorage.getItem('luminiousbooks_bookmarks') || '{}');
+      setBookBookmarks(savedBookmarks);
     } catch (e) {
       setBooks(defaultBooks);
     }
@@ -293,6 +298,7 @@ export default function Storefront() {
   const openBookReader = async (book) => {
     setSelectedBook(book);
     setCurrentPageIndex(0);
+    setBookmarkToast('');
     if (pageSurfaceRef.current) {
       pageSurfaceRef.current.scrollTop = 0;
     }
@@ -323,6 +329,44 @@ export default function Storefront() {
       setPageFlipAnim(false);
     }, 120);
   };
+
+  const saveBookmarkForCurrentPage = () => {
+    if (!selectedBook || bookPages.length === 0) return;
+    const clampedIdx = Math.min(Math.max(currentPageIndex, 0), bookPages.length - 1);
+    const updatedBookmarks = {
+      ...bookBookmarks,
+      [selectedBook.id]: clampedIdx
+    };
+    setBookBookmarks(updatedBookmarks);
+    try {
+      localStorage.setItem('luminiousbooks_bookmarks', JSON.stringify(updatedBookmarks));
+    } catch (err) {
+      console.error(err);
+    }
+    setBookmarkToast(`Saved p.${clampedIdx + 1}`);
+    setTimeout(() => setBookmarkToast(''), 1800);
+  };
+
+  const clearBookmarkForBook = () => {
+    if (!selectedBook) return;
+    const updatedBookmarks = { ...bookBookmarks };
+    delete updatedBookmarks[selectedBook.id];
+    setBookBookmarks(updatedBookmarks);
+    try {
+      localStorage.setItem('luminiousbooks_bookmarks', JSON.stringify(updatedBookmarks));
+    } catch (err) {
+      console.error(err);
+    }
+    setBookmarkToast('Bookmark removed');
+    setTimeout(() => setBookmarkToast(''), 1800);
+  };
+
+  const savedBookmarkPageIndex = useMemo(() => {
+    if (!selectedBook || bookPages.length === 0) return null;
+    const rawIdx = bookBookmarks[selectedBook.id];
+    if (typeof rawIdx !== 'number' || Number.isNaN(rawIdx)) return null;
+    return Math.min(Math.max(rawIdx, 0), bookPages.length - 1);
+  }, [selectedBook, bookBookmarks, bookPages.length]);
 
   useEffect(() => {
     if (!selectedBook) return;
@@ -753,7 +797,7 @@ export default function Storefront() {
       {/* FULL-SCREEN PAGE-FLIP BOOK READER */}
       {selectedBook && (
         <div className="fullscreen-reader-shell">
-          {/* Minimal Top Bar */}
+          {/* Minimal Top Bar with Bookmark */}
           <div
             style={{
               width: '100%',
@@ -761,7 +805,7 @@ export default function Storefront() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              gap: '0.5rem',
+              gap: '0.45rem',
               padding: '0.15rem 0.25rem',
               flexShrink: 0
             }}
@@ -781,6 +825,69 @@ export default function Storefront() {
             >
               {selectedBook.title}
             </h3>
+
+            {isBookUnlocked(selectedBook.id) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={saveBookmarkForCurrentPage}
+                  style={{
+                    backgroundColor: savedBookmarkPageIndex === currentPageIndex ? '#047857' : '#1e293b',
+                    color: '#fef3c7',
+                    border: '1px solid rgba(217, 172, 74, 0.45)',
+                    borderRadius: '8px',
+                    padding: '0.35rem 0.6rem',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {bookmarkToast || `🔖 p.${currentPageIndex + 1}`}
+                </button>
+
+                {savedBookmarkPageIndex !== null && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => flipToPage(savedBookmarkPageIndex)}
+                      style={{
+                        backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                        color: '#fde68a',
+                        border: '1px solid rgba(217, 172, 74, 0.45)',
+                        borderRadius: '8px',
+                        padding: '0.35rem 0.6rem',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Go p.{savedBookmarkPageIndex + 1}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={clearBookmarkForBook}
+                      title="Remove saved bookmark"
+                      style={{
+                        backgroundColor: '#1e293b',
+                        color: '#fca5a5',
+                        border: '1px solid rgba(248, 113, 113, 0.4)',
+                        borderRadius: '8px',
+                        padding: '0.35rem 0.5rem',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
 
             <button
               onClick={() => setSelectedBook(null)}
