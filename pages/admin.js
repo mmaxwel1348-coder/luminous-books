@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
+const OWNER_PIN = '8086';
+const ISSUED_CODES_STORAGE_KEY = 'luminiousbooks_issued_code_entries';
+
+const DEFAULT_ADMIN_BOOKS = [
+  { id: 'b1', title: 'A HERITAGE OF GOLD', prefix: 'HG', price: '600' },
+  { id: 'b2', title: 'JOURNEYING WITH THE LIVING GOD', prefix: 'JG', price: '600' }
+];
+
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('addBook');
 
@@ -21,6 +29,16 @@ export default function AdminPanel() {
   const [localBooks, setLocalBooks] = useState([]);
   const [localSongs, setLocalSongs] = useState([]);
 
+  // Owner Code Generator State (PIN: 8086)
+  const [ownerAuthUnlocked, setOwnerAuthUnlocked] = useState(false);
+  const [ownerPinInput, setOwnerPinInput] = useState('');
+  const [ownerPinError, setOwnerPinError] = useState('');
+  const [genBookId, setGenBookId] = useState('b1');
+  const [genBuyerNote, setGenBuyerNote] = useState('');
+  const [lastGeneratedCode, setLastGeneratedCode] = useState('');
+  const [copiedCode, setCopiedCode] = useState('');
+  const [issuedCodeEntries, setIssuedCodeEntries] = useState([]);
+
   useEffect(() => {
     try {
       const savedSales = localStorage.getItem('luminiousbooks_sales');
@@ -34,10 +52,91 @@ export default function AdminPanel() {
 
       const savedPhone = localStorage.getItem('luminiousbooks_mpesa_phone');
       if (savedPhone) setMpesaNumber(savedPhone);
+
+      const savedCodes = localStorage.getItem(ISSUED_CODES_STORAGE_KEY);
+      if (savedCodes) {
+        const parsedCodes = JSON.parse(savedCodes);
+        if (Array.isArray(parsedCodes)) setIssuedCodeEntries(parsedCodes);
+      }
     } catch (e) {
       console.error(e);
     }
   }, []);
+
+  const selectableBooks = [
+    ...DEFAULT_ADMIN_BOOKS,
+    ...localBooks.map((b) => ({
+      id: b.id,
+      title: b.title,
+      prefix: (b.title || 'BK').replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() || 'BK',
+      price: b.price || '600'
+    }))
+  ];
+
+  const persistIssuedCodes = (entries) => {
+    setIssuedCodeEntries(entries);
+    try {
+      localStorage.setItem(ISSUED_CODES_STORAGE_KEY, JSON.stringify(entries));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleOwnerPinSubmit = (e) => {
+    e.preventDefault();
+    if (ownerPinInput.trim() === OWNER_PIN) {
+      setOwnerAuthUnlocked(true);
+      setOwnerPinError('');
+      setOwnerPinInput('');
+    } else {
+      setOwnerPinError('Incorrect PIN.');
+    }
+  };
+
+  const handleGenerateCustomCode = (e) => {
+    e.preventDefault();
+    const chosenBook = selectableBooks.find((b) => b.id === genBookId) || selectableBooks[0];
+    const existingCodes = new Set(issuedCodeEntries.map((entry) => entry.code));
+
+    let code = '';
+    do {
+      const num = Math.floor(1000 + Math.random() * 9000);
+      code = `${chosenBook.prefix}-${num}`;
+    } while (existingCodes.has(code));
+
+    const newEntry = {
+      id: Date.now() + Math.random(),
+      bookId: chosenBook.id,
+      code,
+      note: genBuyerNote.trim() || 'Paying Customer',
+      createdAt: new Date().toLocaleString()
+    };
+
+    const updated = [newEntry, ...issuedCodeEntries];
+    persistIssuedCodes(updated);
+    setLastGeneratedCode(code);
+    setGenBuyerNote('');
+  };
+
+  const handleDeleteIssuedCode = (id) => {
+    const updated = issuedCodeEntries.filter((entry) => entry.id !== id);
+    persistIssuedCodes(updated);
+  };
+
+  const copyCodeToClipboard = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(''), 1800);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const getBookTitle = (bookId) => {
+    const found = selectableBooks.find((b) => b.id === bookId);
+    return found ? found.title : bookId;
+  };
 
   const handleSaveBook = (e) => {
     e.preventDefault();
@@ -193,6 +292,7 @@ export default function AdminPanel() {
             <button onClick={() => setActiveTab('addSong')} style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'addSong' ? '#2563eb' : '#1e293b', color: '#fff', fontSize: '0.85rem', whiteSpace: 'nowrap', cursor: 'pointer' }}>🎛️ Add Song</button>
             <button onClick={() => setActiveTab('orders')} style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'orders' ? '#2563eb' : '#1e293b', color: '#fff', fontSize: '0.85rem', whiteSpace: 'nowrap', cursor: 'pointer' }}>📦 Orders</button>
             <button onClick={() => setActiveTab('mpesa')} style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'mpesa' ? '#2563eb' : '#1e293b', color: '#fff', fontSize: '0.85rem', whiteSpace: 'nowrap', cursor: 'pointer' }}>📱 M-Pesa</button>
+            <button onClick={() => setActiveTab('codes')} style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'codes' ? '#d97706' : '#1e293b', color: '#fff', fontSize: '0.85rem', whiteSpace: 'nowrap', cursor: 'pointer' }}>🔑 Codes</button>
           </div>
         </header>
 
@@ -214,6 +314,9 @@ export default function AdminPanel() {
           </button>
           <button onClick={() => setActiveTab('mpesa')} style={{ padding: '0.85rem 1rem', borderRadius: '10px', border: 'none', backgroundColor: activeTab === 'mpesa' ? '#2563eb' : 'transparent', color: '#fff', textAlign: 'left', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
             📱 M-Pesa Settings
+          </button>
+          <button onClick={() => setActiveTab('codes')} style={{ padding: '0.85rem 1rem', borderRadius: '10px', border: 'none', backgroundColor: activeTab === 'codes' ? '#d97706' : 'transparent', color: '#fff', textAlign: 'left', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            🔑 Code Generator
           </button>
 
           <div style={{ marginTop: 'auto', padding: '1rem', backgroundColor: '#1e293b', borderRadius: '12px', fontSize: '0.85rem' }}>
@@ -421,6 +524,130 @@ export default function AdminPanel() {
                   Save M-Pesa Settings 💾
                 </button>
               </form>
+            </div>
+          )}
+
+          {activeTab === 'codes' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                <h1 style={{ fontSize: '1.8rem', margin: 0, color: '#fde68a' }}>🔑 Owner Code Generator</h1>
+                {ownerAuthUnlocked && (
+                  <button
+                    type="button"
+                    onClick={() => setOwnerAuthUnlocked(false)}
+                    style={{ backgroundColor: '#334155', color: '#e2e8f0', border: 'none', borderRadius: '8px', padding: '0.5rem 0.85rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Lock Generator
+                  </button>
+                )}
+              </div>
+              <p style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+                Generate custom unlock codes after confirming customer payment.
+              </p>
+
+              {!ownerAuthUnlocked ? (
+                <form onSubmit={handleOwnerPinSubmit} style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '20px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '420px', width: '100%', boxSizing: 'border-box' }}>
+                  <label style={{ fontWeight: '600' }}>Enter Owner PIN</label>
+                  <input
+                    type="password"
+                    placeholder="Enter PIN (8086)"
+                    value={ownerPinInput}
+                    onChange={(e) => setOwnerPinInput(e.target.value)}
+                    style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', boxSizing: 'border-box' }}
+                  />
+                  {ownerPinError && (
+                    <p style={{ margin: 0, color: '#fca5a5', fontSize: '0.85rem' }}>{ownerPinError}</p>
+                  )}
+                  <button type="submit" style={{ padding: '0.9rem', backgroundColor: '#d97706', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', width: '100%' }}>
+                    Unlock Code Generator
+                  </button>
+                </form>
+              ) : (
+                <div style={{ backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '20px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%', boxSizing: 'border-box' }}>
+                  <form onSubmit={handleGenerateCustomCode} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Select Book</label>
+                      <select
+                        value={genBookId}
+                        onChange={(e) => setGenBookId(e.target.value)}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', boxSizing: 'border-box' }}
+                      >
+                        {selectableBooks.map((book) => (
+                          <option key={book.id} value={book.id}>
+                            {book.title} (KES {book.price})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Customer Note / M-Pesa Reference (Optional)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Paid KES 600 via M-Pesa - 0712..."
+                        value={genBuyerNote}
+                        onChange={(e) => setGenBuyerNote(e.target.value)}
+                        style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    <button type="submit" style={{ padding: '1rem', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '1.05rem', cursor: 'pointer', width: '100%' }}>
+                      Generate Custom Code
+                    </button>
+                  </form>
+
+                  {lastGeneratedCode && (
+                    <div style={{ backgroundColor: '#0f172a', border: '1px solid #34d399', borderRadius: '12px', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Generated Code Ready to Send</div>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 'bold', color: '#34d399', letterSpacing: '0.06em' }}>{lastGeneratedCode}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyCodeToClipboard(lastGeneratedCode)}
+                        style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.6rem 1rem', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}
+                      >
+                        {copiedCode === lastGeneratedCode ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                  )}
+
+                  {issuedCodeEntries.length > 0 && (
+                    <div style={{ borderTop: '1px solid #334155', paddingTop: '1.25rem' }}>
+                      <h3 style={{ margin: '0 0 0.85rem 0', fontSize: '1.05rem', color: '#e2e8f0' }}>
+                        Generated Codes ({issuedCodeEntries.length})
+                      </h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '300px', overflowY: 'auto' }}>
+                        {issuedCodeEntries.map((entry) => (
+                          <div key={entry.id} style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <div>
+                              <strong style={{ color: '#fde68a', fontSize: '1rem' }}>{entry.code}</strong>
+                              <span style={{ color: '#94a3b8', fontSize: '0.85rem', marginLeft: '0.5rem' }}>{getBookTitle(entry.bookId)}</span>
+                              <div style={{ color: '#cbd5e1', fontSize: '0.82rem', marginTop: '0.2rem' }}>{entry.note} · {entry.createdAt}</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.45rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => copyCodeToClipboard(entry.code)}
+                                style={{ backgroundColor: '#334155', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.45rem 0.8rem', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}
+                              >
+                                {copiedCode === entry.code ? 'Copied' : 'Copy'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteIssuedCode(entry.id)}
+                                style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '8px', padding: '0.45rem 0.7rem', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </main>
