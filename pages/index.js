@@ -74,93 +74,106 @@ By Dr. Peter Ngotho Njoroge
 First Edition: 2020 | Thika, Kenya
 
 DEDICATION
-Dedicated to the author's wife and children for their prayers and moral support, and to the Vincentian Ministries for bringing hope to God's children.
-
-ACKNOWLEDGMENTS
-Reflects on six years of writing and research alongside family life, ministry, and profession, thanking the Holy Trinity, the author's wife Regina and children Joy, Elvis, and Vincent, parents and siblings, reviewers, and readers.
-
-FOREWORD
-Introduces the book as a faith journey rooted in an ordinary life's daily struggles, family trials, and the meaning found in trusting God's plan and duties toward self, neighbor, and God.
-
-PREFACE
-Explains the book as a testimonial autobiography moving from early blessings through severe trials to a turning point in God's presence, followed by biblical and church teachings on suffering, Christian duties, and prayer.
-
-CHAPTER ONE: CHILDHOOD MEMORIES
-Recalls growing up in 1970s Uasin Gishu (Burnt Forest) as the third of twelve children to Michael and Jacinta, shaped by family history, hard work, humor, discipline, and daily Catholic prayer.
-
-CHAPTER TWO: MY EDUCATION
-Traces schooling from Koiluget Primary and Eldoret Union School to Njoro Boys High School and studying Pharmacy at the University of Nairobi, alongside leadership, music, and Kiswahili mashairi poetry.
-
-CHAPTER THREE: MY FAITH
-Follows early parish life as an altar boy with Fr. Francis, navigating religious questions in Eldoret and secondary school through Y.C.S., and leading Catholic student life and music at university.
-
-CHAPTER FOUR: THE SEASON OF TRIBULATIONS
-Chronicles early adulthood challenges including health issues, campus disruptions, the 1992 ethnic clashes and displacement to Nyandarua, and navigating HELB and travel hardships to finish university.
-
-CHAPTER FIVE: FROM THE FRYING PAN INTO THE FIRE
-Describes starting work in October 1997, drifting from regular prayer, enduring years of cervical spondylosis and trigeminal neuralgia, church marriage, pregnancy losses, and raising children through severe allergies and reflux.
-
-CHAPTER SIX: MY TURNING POINT
-Narrates attending the 2013 Vincentian retreat at Don Bosco Church, experiencing physical healing after sixteen years of pain, and praying through generational bondages for the healing of the children and restored voice and talents.
-
-CHAPTER SEVEN: THE MISSING LINK
-Covers later trials—including a stalled fourth music album, ongoing food allergies, a difficult house-help incident, a car accident, a home break-in, and family prayer and healing Masses—culminating in deliverance and gratitude.
-
-SUMMARY OF PART I
-Summarizes the testimonial autobiography around five core lessons: faith-rooted parenting and youth formation, God's presence inside life's storms, vulnerability before God, everyday miracles, and seeking deeper spiritual understanding.
-
-CHAPTER EIGHT: FOLLOWING CHRIST
-Opens Part II by examining Christian discipleship and categories of suffering—our cross, the suffering of Job and saints, and the roots of suffering—through Scripture and church teaching.
-
-CHAPTER NINE: CONSEQUENTIAL SUFFERING
-Explores unnecessary suffering stemming from inner wounds, sin, unforgiveness, unhealed trauma, harmful relationships, and ancestral bondages, along with steps toward repentance, forgiveness, sanctification, and spiritual warfare.
-
-CHAPTER TEN: WHAT GOD REQUIRES OF US
-Focuses on duties toward God—seeking and fearing the Lord, obeying His commandments in love, offering unceasing praise even in distress, and giving genuine tithes, offerings, and participation in the Mass.
-
-CHAPTER ELEVEN: CATEGORY B - DUTIES TOWARDS SELF
-Examines inner spiritual care through repentance and confession, limitless forgiveness, humility over pride, and persistent personal, family, and intercessory prayer.
-
-CHAPTER TWELVE: CATEGORY C - DUTIES TOWARDS OTHERS
-Highlights service to others through works of mercy and charity, witnessing and evangelization, and using God-given talents, gifts, and fruits of the Holy Spirit with humility.
-
-CHAPTER THIRTEEN: PRAYERS FOR GUIDANCE
-Brings together prayers for praise to the Holy Trinity, forgiveness, confession, deliverance, healing, protection, sufferers, a prayerful heart, obedience, humility, offerings, the needy, and the Peace Prayer of St. Francis of Assisi.
-
-BIBLIOGRAPHY
-Draws on Scripture (extensively using the Good News Bible), church teachings, writings of the saints, and spiritual works referenced across the book's testimonial and doctrinal chapters.`;
+Dedicated to the author's wife and children for their prayers and moral support, and to the Vincentian Ministries for bringing hope to God's children.`;
 
 const MAJOR_HEADING_REGEX =
-  /^(CHAPTER\s+[A-Z0-9]+|FOREWORD|INTRODUCTION|DEDICATION|ACKNOWLEDGMENTS|PREFACE|SUMMARY OF PART I|CONCLUSION TO THE BOOK|CLOSING PRAYER|BIBLIOGRAPHY)/i;
+  /^(PART\s+[IVXLC0-9]+|CHAPTER\s+[A-Z0-9]+|SPECIAL\s+DEDICATION|DEDICATION|ACKNOWLEDGEMENT(?:S)?|FOREWORD|PREFACE|INTRODUCTION|SUMMARY\s+OF\s+PART\s+[IVXLC0-9]+|CONCLUSION(?:\s+TO\s+THE\s+BOOK)?|CLOSING\s+PRAYER|PRAYERS\s+FOR\s+GUIDANCE|BIBLIOGRAPHY)\b/i;
+
+const ROMAN_PAGE_ONLY_REGEX = /^(?:[ivxlcdm]{1,8}|\d{1,4})$/i;
+
+function isHeadingLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.length > 110) return false;
+  if (MAJOR_HEADING_REGEX.test(trimmed)) return true;
+
+  const lettersOnly = trimmed.replace(/[^A-Za-z]/g, '');
+  const upperLetters = trimmed.replace(/[^A-Z]/g, '');
+  const isAllCapsHeading =
+    lettersOnly.length >= 4 &&
+    trimmed.length <= 85 &&
+    upperLetters.length / lettersOnly.length >= 0.85 &&
+    !/[.?!,;]$/.test(trimmed);
+
+  return isAllCapsHeading;
+}
+
+function buildStructuredBlocks(rawText) {
+  if (!rawText || !rawText.trim()) return [];
+
+  const normalized = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const rawLines = normalized.split('\n');
+
+  const blocks = [];
+  let paraBuffer = [];
+
+  const flushParagraph = () => {
+    if (paraBuffer.length === 0) return;
+    const joined = paraBuffer
+      .join(' ')
+      .replace(/\s+([.,;:!?])/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim();
+    paraBuffer = [];
+    if (joined) {
+      blocks.push({ type: 'paragraph', text: joined });
+    }
+  };
+
+  for (const rawLine of rawLines) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      flushParagraph();
+      continue;
+    }
+
+    if (ROMAN_PAGE_ONLY_REGEX.test(line)) {
+      continue;
+    }
+
+    if (isHeadingLine(line)) {
+      flushParagraph();
+      blocks.push({ type: 'heading', text: line });
+      continue;
+    }
+
+    paraBuffer.push(line);
+
+    // If a line ends with sentence punctuation and the next line starts a new thought with a capital/quote, keep paragraphs crisp
+    if (/[.!?]["”']?$/.test(line) && line.length < 65) {
+      flushParagraph();
+    }
+  }
+
+  flushParagraph();
+  return blocks;
+}
 
 function paginateBookText(rawText, charsPerPage = 720) {
-  if (!rawText || !rawText.trim()) return [];
-  const paragraphs = rawText
-    .split(/\n\s*\n/)
-    .map(p => p.trim())
-    .filter(Boolean);
+  const blocks = buildStructuredBlocks(rawText);
+  if (blocks.length === 0) return [];
 
   const pages = [];
   let currentBlocks = [];
   let currentLen = 0;
 
-  for (const para of paragraphs) {
-    const isHeading = MAJOR_HEADING_REGEX.test(para.split('\n')[0]);
+  for (const block of blocks) {
+    const blockLen = block.text.length + (block.type === 'heading' ? 140 : 24);
 
-    if (isHeading && currentBlocks.length > 0 && currentLen > 120) {
+    if (block.type === 'heading' && currentBlocks.length > 0 && currentLen > 90) {
       pages.push(currentBlocks);
-      currentBlocks = [para];
-      currentLen = para.length;
+      currentBlocks = [block];
+      currentLen = blockLen;
       continue;
     }
 
-    if (currentLen + para.length > charsPerPage && currentBlocks.length > 0) {
+    if (currentLen + blockLen > charsPerPage && currentBlocks.length > 0) {
       pages.push(currentBlocks);
-      currentBlocks = [para];
-      currentLen = para.length;
+      currentBlocks = [block];
+      currentLen = blockLen;
     } else {
-      currentBlocks.push(para);
-      currentLen += para.length + 2;
+      currentBlocks.push(block);
+      currentLen += blockLen;
     }
   }
 
@@ -279,7 +292,7 @@ export default function Storefront() {
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
-    const budget = isMobileScreen ? 420 : 720;
+    const budget = isMobileScreen ? 520 : 880;
     const sourceText =
       loadedBookTexts[selectedBook.id] ||
       selectedBook.fullText ||
@@ -292,10 +305,10 @@ export default function Storefront() {
     const options = [{ label: 'Start / Cover Info', pageIndex: 0 }];
     bookPages.forEach((blocks, pageIdx) => {
       for (const block of blocks) {
-        const firstLine = (block.split('\n')[0] || '').trim();
-        if (MAJOR_HEADING_REGEX.test(firstLine)) {
+        if (block.type === 'heading') {
+          const cleanTitle = block.text.trim();
           options.push({
-            label: firstLine.length > 48 ? `${firstLine.slice(0, 45)}...` : firstLine,
+            label: cleanTitle.length > 48 ? `${cleanTitle.slice(0, 45)}...` : cleanTitle,
             pageIndex: pageIdx
           });
           break;
@@ -516,89 +529,49 @@ export default function Storefront() {
 
   const renderBookPageBlocks = (blocks) => {
     return blocks.map((block, idx) => {
-      const lines = block.split('\n').filter(Boolean);
-      const firstLine = lines[0] || '';
-      const isMajorHeading = MAJOR_HEADING_REGEX.test(firstLine.trim());
-
-      if (isMajorHeading) {
-        const restLines = lines.slice(1).join('\n');
+      if (block.type === 'heading') {
+        const isChapter = /^CHAPTER\b/i.test(block.text.trim());
         return (
-          <div key={idx} style={{ marginBottom: '0.95rem' }}>
-            <div
-              style={{
-                background: 'linear-gradient(90deg, rgba(180, 130, 35, 0.18), rgba(180, 130, 35, 0.03))',
-                borderLeft: '4px solid #b45309',
-                padding: '0.6rem 0.95rem',
-                borderRadius: '0 10px 10px 0',
-                marginBottom: restLines ? '0.7rem' : 0
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '0.68rem',
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: '#92400e',
-                  fontWeight: 700,
-                  marginBottom: '0.16rem'
-                }}
-              >
-                ✦ Luminous Edition ✦
-              </div>
-              <h4
-                style={{
-                  margin: 0,
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '1.22rem',
-                  lineHeight: 1.32,
-                  color: '#1e1b18',
-                  letterSpacing: '0.03em'
-                }}
-              >
-                {firstLine}
-              </h4>
-            </div>
-            {restLines && (
-              <p
-                style={{
-                  margin: 0,
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: '1.02rem',
-                  lineHeight: 1.68,
-                  color: '#292524',
-                  whiteSpace: 'pre-line'
-                }}
-              >
-                {restLines}
-              </p>
-            )}
-          </div>
-        );
-      }
-
-      const isSubheading =
-        block.length < 75 &&
-        !block.endsWith('.') &&
-        !block.endsWith('?') &&
-        !block.endsWith('!') &&
-        !block.startsWith('-');
-
-      if (isSubheading) {
-        return (
-          <h5
+          <div
             key={idx}
             style={{
-              margin: '0.85rem 0 0.35rem 0',
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: '1.06rem',
-              fontWeight: 700,
-              color: '#78350f',
-              borderBottom: '1px solid rgba(120, 53, 15, 0.18)',
-              paddingBottom: '0.2rem'
+              background: isChapter
+                ? 'linear-gradient(120deg, rgba(180, 83, 9, 0.2), rgba(217, 119, 6, 0.08), rgba(253, 250, 242, 0))'
+                : 'linear-gradient(90deg, rgba(146, 64, 14, 0.14), rgba(146, 64, 14, 0.02))',
+              borderLeft: '5px solid #b45309',
+              borderBottom: '1px solid rgba(180, 83, 9, 0.22)',
+              padding: '0.85rem 1.15rem',
+              borderRadius: '0 12px 12px 0',
+              marginTop: idx === 0 ? '0.15rem' : '1.25rem',
+              marginBottom: '1rem'
             }}
           >
-            {block}
-          </h5>
+            <div
+              style={{
+                fontSize: '0.7rem',
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#92400e',
+                fontWeight: 700,
+                marginBottom: '0.25rem'
+              }}
+            >
+              {isChapter ? '✦ Chapter Section ✦' : '✦ Luminous Edition ✦'}
+            </div>
+            <h4
+              style={{
+                margin: 0,
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontSize: isChapter ? '1.52rem' : '1.34rem',
+                fontWeight: 700,
+                lineHeight: 1.28,
+                color: '#1c1917',
+                letterSpacing: '0.02em'
+              }}
+            >
+              {block.text}
+            </h4>
+          </div>
         );
       }
 
@@ -606,15 +579,15 @@ export default function Storefront() {
         <p
           key={idx}
           style={{
-            margin: '0 0 0.75rem 0',
+            margin: '0 0 0.9rem 0',
             fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '1.02rem',
-            lineHeight: 1.68,
+            fontSize: '1.05rem',
+            lineHeight: 1.75,
             color: '#292524',
-            whiteSpace: 'pre-line'
+            textAlign: 'left'
           }}
         >
-          {block}
+          {block.text}
         </p>
       );
     });
