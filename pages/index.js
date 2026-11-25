@@ -253,7 +253,6 @@ export default function Storefront() {
         setMpesaReceiveNumber(savedPhone);
       }
 
-      // Start locked unless explicitly unlocked in this browser
       const savedUnlockedBooks = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_books') || '[]');
       setUnlockedBookIds(Array.isArray(savedUnlockedBooks) ? savedUnlockedBooks : []);
 
@@ -299,7 +298,6 @@ export default function Storefront() {
       pageSurfaceRef.current.scrollTop = 0;
     }
 
-    // Only fetch full manuscript text if the book is actually unlocked
     if (isBookUnlocked(book.id) && book.textUrl && !loadedBookTexts[book.id]) {
       try {
         const res = await fetch(book.textUrl);
@@ -668,7 +666,16 @@ export default function Storefront() {
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Read free summaries and pay via M-Pesa to unlock full-screen reading.</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: unlockedBookIds.length > 0 ? '0.85rem' : 0 }}>Read free summaries and pay via M-Pesa to unlock full-screen reading.</p>
+              {unlockedBookIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={resetAllUnlocks}
+                  style={{ backgroundColor: '#334155', color: '#fca5a5', border: '1px solid #475569', padding: '0.4rem 0.8rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                >
+                  🔒 Lock All Books
+                </button>
+              )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
