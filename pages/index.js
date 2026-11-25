@@ -76,9 +76,6 @@ First Edition: 2020 | Thika, Kenya
 DEDICATION
 Dedicated to the author's wife and children for their prayers and moral support, and to the Vincentian Ministries for bringing hope to God's children.`;
 
-// Owner PIN for the code generator
-const OWNER_PIN = '8086';
-
 // Global fallback codes per book (work for all visitors across all devices)
 const DEFAULT_BOOK_CODES = {
   b1: ['HERITAGE600'],
@@ -214,15 +211,6 @@ export default function Storefront() {
   const [bookmarkToast, setBookmarkToast] = useState('');
   const [loadedBookTexts, setLoadedBookTexts] = useState({});
 
-  // Owner Code Generator State
-  const [ownerAuthUnlocked, setOwnerAuthUnlocked] = useState(false);
-  const [ownerPinInput, setOwnerPinInput] = useState('');
-  const [ownerPinError, setOwnerPinError] = useState('');
-  const [genBookId, setGenBookId] = useState('b1');
-  const [genBuyerNote, setGenBuyerNote] = useState('');
-  const [lastGeneratedCode, setLastGeneratedCode] = useState('');
-  const [copiedCode, setCopiedCode] = useState('');
-
   // Reader Modal State (Books)
   const [selectedBook, setSelectedBook] = useState(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -293,52 +281,6 @@ export default function Storefront() {
     }
     setLoading(false);
   }, []);
-
-  const handleOwnerPinSubmit = (e) => {
-    e.preventDefault();
-    if (ownerPinInput.trim() === OWNER_PIN) {
-      setOwnerAuthUnlocked(true);
-      setOwnerPinError('');
-      setOwnerPinInput('');
-    } else {
-      setOwnerPinError('Incorrect owner PIN.');
-    }
-  };
-
-  const handleGenerateCustomerCode = (e) => {
-    e.preventDefault();
-    const prefix = genBookId === 'b1' ? 'HG' : 'JG';
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const code = `${prefix}-${randomNum}`;
-    const newEntry = {
-      id: Date.now() + Math.random(),
-      bookId: genBookId,
-      code,
-      note: genBuyerNote.trim() || 'Paying Customer',
-      createdAt: new Date().toLocaleString()
-    };
-
-    const updated = [newEntry, ...issuedCodeEntries];
-    setIssuedCodeEntries(updated);
-    setLastGeneratedCode(code);
-    setGenBuyerNote('');
-
-    try {
-      localStorage.setItem('luminiousbooks_issued_code_entries', JSON.stringify(updated));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const copyCodeToClipboard = async (code) => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopiedCode(code);
-      setTimeout(() => setCopiedCode(''), 1800);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
@@ -537,11 +479,6 @@ export default function Storefront() {
   const isBookUnlocked = (bookId) => unlockedBookIds.includes(bookId);
   const isSongUnlocked = (songId) => unlockedSongIds.includes(songId);
 
-  const getBookTitleById = (id) => {
-    const found = books.find((b) => b.id === id);
-    return found ? found.title : id;
-  };
-
   const renderBookPageBlocks = (blocks) => {
     return blocks.map((block, idx) => {
       if (block.type === 'heading') {
@@ -697,7 +634,6 @@ export default function Storefront() {
             🛒
             {cart.length > 0 && <span style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '1px 5px', fontSize: '0.65rem', fontWeight: 'bold' }}>{cart.length}</span>}
           </button>
-          <button title="Owner Code Generator" onClick={() => setActiveCategory('owner')} style={{ padding: '0.5rem 0.65rem', borderRadius: '8px', border: 'none', backgroundColor: activeCategory === 'owner' ? '#d97706' : '#1e293b', color: '#fff', cursor: 'pointer' }}>🔑</button>
         </div>
       </header>
 
@@ -711,7 +647,6 @@ export default function Storefront() {
           🛒
           {cart.length > 0 && <span style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.75rem', fontWeight: 'bold' }}>{cart.length}</span>}
         </button>
-        <button title="Owner Code Generator" onClick={() => setActiveCategory('owner')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px', height: '50px', borderRadius: '12px', border: 'none', backgroundColor: activeCategory === 'owner' ? '#d97706' : 'transparent', color: '#fff', fontSize: '1.35rem', cursor: 'pointer', marginTop: 'auto' }}>🔑</button>
       </aside>
 
       {/* Main Content */}
@@ -877,113 +812,6 @@ export default function Storefront() {
                   <span>Full Price Total:</span>
                   <span style={{ color: '#34d399' }}>KES {cartTotal}</span>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* OWNER-ONLY CODE GENERATOR VIEW */}
-        {activeCategory === 'owner' && (
-          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-            <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '1.75rem', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.4rem 0', fontWeight: '800', color: '#fde68a' }}>🔑 Owner Code Generator</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.92rem', margin: 0 }}>Generate unlock codes for customers after confirming full payment.</p>
-            </div>
-
-            {!ownerAuthUnlocked ? (
-              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '2rem', maxWidth: '420px', margin: '0 auto' }}>
-                <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1.2rem', color: '#fff' }}>Enter Owner PIN</h3>
-                <form onSubmit={handleOwnerPinSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  <input
-                    type="password"
-                    placeholder="Owner PIN"
-                    value={ownerPinInput}
-                    onChange={(e) => setOwnerPinInput(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '1rem' }}
-                  />
-                  {ownerPinError && <p style={{ margin: 0, color: '#fca5a5', fontSize: '0.85rem' }}>{ownerPinError}</p>}
-                  <button
-                    type="submit"
-                    style={{ width: '100%', padding: '0.8rem', backgroundColor: '#d97706', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
-                  >
-                    Open Generator
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <form onSubmit={handleGenerateCustomerCode} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600 }}>Select Book</label>
-                    <select
-                      value={genBookId}
-                      onChange={(e) => setGenBookId(e.target.value)}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '0.95rem' }}
-                    >
-                      {books.map((b) => (
-                        <option key={b.id} value={b.id}>{b.title} (KES {b.price})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600 }}>Buyer Label / Phone Note (Optional)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Paid via M-Pesa 0712..."
-                      value={genBuyerNote}
-                      onChange={(e) => setGenBuyerNote(e.target.value)}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #475569', backgroundColor: '#0f172a', color: '#fff', fontSize: '0.95rem' }}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    style={{ width: '100%', padding: '0.85rem', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
-                  >
-                    Generate Unique Unlock Code
-                  </button>
-                </form>
-
-                {lastGeneratedCode && (
-                  <div style={{ backgroundColor: '#0f172a', border: '1px solid #34d399', borderRadius: '12px', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>New Code Ready to Send:</div>
-                      <div style={{ fontSize: '1.35rem', fontWeight: 'bold', color: '#34d399', letterSpacing: '0.06em' }}>{lastGeneratedCode}</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyCodeToClipboard(lastGeneratedCode)}
-                      style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '0.55rem 1rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem' }}
-                    >
-                      {copiedCode === lastGeneratedCode ? 'Copied!' : 'Copy Code'}
-                    </button>
-                  </div>
-                )}
-
-                {issuedCodeEntries.length > 0 && (
-                  <div style={{ borderTop: '1px solid #334155', paddingTop: '1rem' }}>
-                    <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', color: '#e2e8f0' }}>Generated Codes History</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '260px', overflowY: 'auto' }}>
-                      {issuedCodeEntries.map((item) => (
-                        <div key={item.id} style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '10px', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                          <div>
-                            <strong style={{ color: '#fde68a', fontSize: '1rem' }}>{item.code}</strong>
-                            <span style={{ color: '#94a3b8', fontSize: '0.82rem', marginLeft: '0.6rem' }}>{getBookTitleById(item.bookId)}</span>
-                            <div style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>{item.note} · {item.createdAt}</div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => copyCodeToClipboard(item.code)}
-                            style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '0.4rem 0.75rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }}
-                          >
-                            {copiedCode === item.code ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
