@@ -76,8 +76,8 @@ First Edition: 2020 | Thika, Kenya
 DEDICATION
 Dedicated to the author's wife and children for their prayers and moral support, and to the Vincentian Ministries for bringing hope to God's children.`;
 
-// Change this PIN to your own secret owner PIN
-const OWNER_PIN = '2026';
+// Owner PIN for the code generator
+const OWNER_PIN = '8086';
 
 // Global fallback codes per book (work for all visitors across all devices)
 const DEFAULT_BOOK_CODES = {
