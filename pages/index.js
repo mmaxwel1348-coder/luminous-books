@@ -147,17 +147,13 @@ function buildStructuredBlocks(rawText) {
     }
 
     paraBuffer.push(line);
-
-    if (/[.!?]["”']?$/.test(line) && line.length < 65) {
-      flushParagraph();
-    }
   }
 
   flushParagraph();
   return blocks;
 }
 
-function paginateBookText(rawText, charsPerPage = 1150) {
+function paginateBookText(rawText, charsPerPage = 1450) {
   const blocks = buildStructuredBlocks(rawText);
   if (blocks.length === 0) return [];
 
@@ -166,14 +162,7 @@ function paginateBookText(rawText, charsPerPage = 1150) {
   let currentLen = 0;
 
   for (const block of blocks) {
-    const blockLen = block.text.length + (block.type === 'heading' ? 140 : 24);
-
-    if (block.type === 'heading' && currentBlocks.length > 0 && currentLen > 120) {
-      pages.push(currentBlocks);
-      currentBlocks = [block];
-      currentLen = blockLen;
-      continue;
-    }
+    const blockLen = block.text.length + (block.type === 'heading' ? 110 : 18);
 
     if (currentLen + blockLen > charsPerPage && currentBlocks.length > 0) {
       pages.push(currentBlocks);
@@ -300,7 +289,7 @@ export default function Storefront() {
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
-    const budget = isMobileScreen ? 680 : 1150;
+    const budget = isMobileScreen ? 880 : 1450;
     const sourceText =
       loadedBookTexts[selectedBook.id] ||
       selectedBook.fullText ||
