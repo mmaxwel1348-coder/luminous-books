@@ -191,11 +191,11 @@ export default function Storefront() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paying, setPaying] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paidAmount, setPaidAmount] = useState(0);
+  const [orderRecorded, setOrderRecorded] = useState(false);
+  const [recordedAmount, setRecordedAmount] = useState(0);
   const [mpesaReceiveNumber, setMpesaReceiveNumber] = useState('0712345678');
 
-  // Locked by default until customer buys in full
+  // Strictly locked until real payment is verified
   const [unlockedBookIds, setUnlockedBookIds] = useState([]);
   const [unlockedSongIds, setUnlockedSongIds] = useState([]);
   const [bookBookmarks, setBookBookmarks] = useState({});
@@ -234,7 +234,6 @@ export default function Storefront() {
     }
   ];
 
-  // Sample music tracks removed
   const defaultSongs = [];
 
   useEffect(() => {
@@ -255,11 +254,11 @@ export default function Storefront() {
         setMpesaReceiveNumber(savedPhone);
       }
 
-      const savedUnlockedBooks = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_books') || '[]');
-      setUnlockedBookIds(Array.isArray(savedUnlockedBooks) ? savedUnlockedBooks : []);
-
-      const savedUnlockedSongs = JSON.parse(localStorage.getItem('luminiousbooks_unlocked_songs') || '[]');
-      setUnlockedSongIds(Array.isArray(savedUnlockedSongs) ? savedUnlockedSongs : []);
+      // Clear prior unverified local unlocks so books stay locked
+      localStorage.removeItem('luminiousbooks_unlocked_books');
+      localStorage.removeItem('luminiousbooks_unlocked_songs');
+      setUnlockedBookIds([]);
+      setUnlockedSongIds([]);
 
       const savedBookmarks = JSON.parse(localStorage.getItem('luminiousbooks_bookmarks') || '{}');
       setBookBookmarks(savedBookmarks);
@@ -270,17 +269,6 @@ export default function Storefront() {
     }
     setLoading(false);
   }, []);
-
-  const resetAllUnlocks = () => {
-    setUnlockedBookIds([]);
-    setUnlockedSongIds([]);
-    try {
-      localStorage.removeItem('luminiousbooks_unlocked_books');
-      localStorage.removeItem('luminiousbooks_unlocked_songs');
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const bookPages = useMemo(() => {
     if (!selectedBook) return [];
@@ -387,37 +375,22 @@ export default function Storefront() {
 
   const cartTotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
 
+  // Records order without auto-unlocking until payment is actually sent & verified
   const handleMpesaCheckout = (e) => {
     e.preventDefault();
     if (!phoneNumber || phoneNumber.length < 9) {
       alert('Please enter a valid M-Pesa phone number (e.g. 0712345678)');
       return;
     }
-    const totalToCharge = cartTotal;
+    const amountDue = cartTotal;
     setPaying(true);
 
     setTimeout(() => {
       setPaying(false);
-      setPaidAmount(totalToCharge);
-      setPaymentSuccess(true);
-
-      const purchasedBookIds = cart
-        .filter(item => item.fullText !== undefined || item.textUrl !== undefined || String(item.id).startsWith('b'))
-        .map(item => item.id);
-      const purchasedSongIds = cart
-        .filter(item => item.description !== undefined && !item.fullText && !item.textUrl && !String(item.id).startsWith('b'))
-        .map(item => item.id);
-
-      const updatedBookIds = Array.from(new Set([...unlockedBookIds, ...purchasedBookIds]));
-      const updatedSongIds = Array.from(new Set([...unlockedSongIds, ...purchasedSongIds]));
-
-      setUnlockedBookIds(updatedBookIds);
-      setUnlockedSongIds(updatedSongIds);
+      setRecordedAmount(amountDue);
+      setOrderRecorded(true);
 
       try {
-        localStorage.setItem('luminiousbooks_unlocked_books', JSON.stringify(updatedBookIds));
-        localStorage.setItem('luminiousbooks_unlocked_songs', JSON.stringify(updatedSongIds));
-
         const savedSales = localStorage.getItem('luminiousbooks_sales');
         const salesData = savedSales ? JSON.parse(savedSales) : { totalSold: 0, totalRevenue: 0, salesList: [] };
 
@@ -426,12 +399,13 @@ export default function Storefront() {
           title: item.title,
           price: item.price,
           phone: phoneNumber,
+          status: 'awaiting_mpesa_payment',
           date: new Date().toLocaleDateString()
         }));
 
         const updatedSales = {
-          totalSold: salesData.totalSold + cart.length,
-          totalRevenue: salesData.totalRevenue + totalToCharge,
+          totalSold: salesData.totalSold,
+          totalRevenue: salesData.totalRevenue,
           salesList: [...newSalesList, ...salesData.salesList]
         };
 
@@ -441,13 +415,13 @@ export default function Storefront() {
       }
 
       setCart([]);
-    }, 1500);
+    }, 1000);
   };
 
   const closeModal = () => {
     setCheckoutOpen(false);
-    setPaymentSuccess(false);
-    setPaidAmount(0);
+    setOrderRecorded(false);
+    setRecordedAmount(0);
     setPhoneNumber('');
   };
 
@@ -672,16 +646,7 @@ export default function Storefront() {
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid #334155', borderRadius: '20px', padding: '2rem 1.25rem', marginBottom: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', fontWeight: '800' }}>📚 Extraordinary Books</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: unlockedBookIds.length > 0 ? '0.85rem' : 0 }}>Books remain locked until bought in full via M-Pesa.</p>
-              {unlockedBookIds.length > 0 && (
-                <button
-                  type="button"
-                  onClick={resetAllUnlocks}
-                  style={{ backgroundColor: '#334155', color: '#fca5a5', border: '1px solid #475569', padding: '0.4rem 0.8rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
-                >
-                  🔒 Lock All Books
-                </button>
-              )}
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: 0 }}>Books remain locked until full M-Pesa payment is completed and verified.</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' }}>
@@ -813,7 +778,6 @@ export default function Storefront() {
       {/* FULL-SCREEN PAGE-FLIP BOOK READER */}
       {selectedBook && (
         <div className="fullscreen-reader-shell">
-          {/* Minimal Top Bar with Bookmark */}
           <div
             style={{
               width: '100%',
@@ -923,7 +887,6 @@ export default function Storefront() {
             </button>
           </div>
 
-          {/* Reader Content Area */}
           {!isBookUnlocked(selectedBook.id) ? (
             <div style={{ flex: 1, minHeight: 0, width: '100%', margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem', overflowY: 'auto' }}>
               <div style={{ backgroundColor: '#0f172a', padding: '1.5rem', borderRadius: '14px', border: '1px solid #334155' }}>
@@ -968,7 +931,6 @@ export default function Storefront() {
                 </div>
               </div>
 
-              {/* Arrows Only at Bottom */}
               <div
                 style={{
                   width: '100%',
@@ -1101,10 +1063,10 @@ export default function Storefront() {
       {checkoutOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, backdropFilter: 'blur(5px)', padding: '1rem' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '20px', padding: '1.75rem', width: '100%', maxWidth: '420px' }}>
-            {!paymentSuccess ? (
+            {!orderRecorded ? (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.2rem' }}>📲 M-Pesa Send Money Checkout</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem' }}>📲 M-Pesa Payment Instructions</h3>
                   <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                 </div>
 
@@ -1114,12 +1076,12 @@ export default function Storefront() {
                 </div>
 
                 <div style={{ backgroundColor: '#1e293b', border: '1px dashed #38bdf8', padding: '0.85rem', borderRadius: '10px', marginBottom: '1.25rem' }}>
-                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Send Full Payment To (Dr. Peter Ngotho Njoroge):</p>
+                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#94a3b8' }}>Go to M-Pesa & Send Money To:</p>
                   <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8' }}>📞 {mpesaReceiveNumber}</p>
                 </div>
 
                 <form onSubmit={handleMpesaCheckout}>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your M-Pesa Phone Number (For Confirmation)</label>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>Your M-Pesa Phone Number (For Order Reference)</label>
                   <input
                     type="tel"
                     placeholder="0712345678"
@@ -1130,17 +1092,19 @@ export default function Storefront() {
                   <button
                     type="submit"
                     disabled={paying}
-                    style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
+                    style={{ width: '100%', padding: '0.85rem', backgroundColor: paying ? '#475569' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: paying ? 'not-allowed' : 'pointer' }}
                   >
-                    {paying ? 'Processing Payment...' : `Confirm KES ${cartTotal} Paid`}
+                    {paying ? 'Recording Order...' : `Record KES ${cartTotal} Order`}
                   </button>
                 </form>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
-                <h3 style={{ fontSize: '1.3rem', color: '#34d399', margin: '0 0 0.5rem 0' }}>Payment Confirmed — Book Unlocked!</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '1.25rem' }}>Thank you for paying KES {paidAmount}. Your full book access is now unlocked—open the book to start reading.</p>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+                <h3 style={{ fontSize: '1.3rem', color: '#fbbf24', margin: '0 0 0.5rem 0' }}>Awaiting Full Payment</h3>
+                <p style={{ color: '#cbd5e1', marginBottom: '1.25rem' }}>
+                  Your order for <strong>KES {recordedAmount}</strong> is recorded. Open M-Pesa on your phone, send <strong>KES {recordedAmount}</strong> to <strong>{mpesaReceiveNumber}</strong>, enter your PIN, and press OK. Books stay locked until payment is verified.
+                </p>
                 <button onClick={closeModal} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                   Done
                 </button>
